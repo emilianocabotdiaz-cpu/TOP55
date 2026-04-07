@@ -10,26 +10,6 @@ import {
   doc,
 } from "firebase/firestore";
 
-const responsablesIniciales = [
-  { id: 1, nombre: "Juan Pérez", telefono: "600111222", usuario: "juan", password: "1234" },
-  { id: 2, nombre: "María Gómez", telefono: "600333444", usuario: "maria", password: "1234" },
-  { id: 3, nombre: "Antonio Ruiz", telefono: "600555666", usuario: "antonio", password: "1234" },
-];
-
-const interactoresIniciales = [
-  { id: 1, nombre: "Pedro Gómez", telefono: "600777111", usuario: "interactor1", password: "1234", activo: true },
-  { id: 2, nombre: "Lucía Romero", telefono: "600777222", usuario: "interactor2", password: "1234", activo: true },
-];
-
-const votsIniciales = [
-  { id: "seed-1", referencia: "ES-001245", nombre: "Luna", telefono: "600000001", responsableId: 1, hora: "18:41", registrada: true },
-  { id: "seed-2", referencia: "ES-001246", nombre: "Perla", telefono: "600000002", responsableId: 1, hora: null, registrada: false },
-  { id: "seed-3", referencia: "ES-004112", nombre: "Estrella", telefono: "600000003", responsableId: 2, hora: "18:37", registrada: true },
-  { id: "seed-4", referencia: "ES-005010", nombre: "Sol", telefono: "600000004", responsableId: 2, hora: null, registrada: false },
-  { id: "seed-5", referencia: "ES-008921", nombre: "Nieve", telefono: "600000005", responsableId: 3, hora: "18:39", registrada: true },
-  { id: "seed-6", referencia: "ES-009101", nombre: "Sombra", telefono: "600000006", responsableId: 3, hora: null, registrada: false },
-];
-
 function Badge({ children, tone = "gray" }) {
   const styles = {
     gray: "bg-slate-100 text-slate-700",
@@ -134,8 +114,16 @@ function LoginScreen({ onLogin, responsables, interactores }) {
             {rol === "responsable" && (
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">Responsable</label>
-                <select value={usuario} onChange={(e) => setUsuario(e.target.value)} className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none">
-                  {responsables.map((r) => <option key={r.id} value={r.usuario}>{r.nombre}</option>)}
+                <select
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                  className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
+                >
+                  {responsables.map((r) => (
+                    <option key={r.id} value={r.usuario}>
+                      {r.nombre}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
@@ -143,8 +131,18 @@ function LoginScreen({ onLogin, responsables, interactores }) {
             {rol === "interactor" && (
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">Interactor</label>
-                <select value={usuario} onChange={(e) => setUsuario(e.target.value)} className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none">
-                  {interactores.filter(i => i.activo).map((i) => <option key={i.id} value={i.usuario}>{i.nombre}</option>)}
+                <select
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                  className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
+                >
+                  {interactores
+                    .filter((i) => i.activo)
+                    .map((i) => (
+                      <option key={i.id} value={i.usuario}>
+                        {i.nombre}
+                      </option>
+                    ))}
                 </select>
               </div>
             )}
@@ -160,7 +158,9 @@ function LoginScreen({ onLogin, responsables, interactores }) {
               />
             </div>
 
-            <button onClick={entrar} className="h-12 w-full rounded-xl bg-slate-950 text-white font-semibold">Entrar</button>
+            <button onClick={entrar} className="h-12 w-full rounded-xl bg-slate-950 text-white font-semibold">
+              Entrar
+            </button>
           </div>
         </Card>
       </div>
@@ -190,13 +190,18 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
       return;
     }
 
-    const hora = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+    const hora = new Date().toLocaleTimeString("es-ES", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-    if (existe.id && !String(existe.id).startsWith("seed-")) {
+    if (existe.id) {
       await updateDoc(doc(db, "vots", existe.id), { registrada: true, hora });
     }
 
-    setVots((prev) => prev.map((o) => (o.referencia === ref ? { ...o, registrada: true, hora } : o)));
+    setVots((prev) =>
+      prev.map((o) => (o.referencia === ref ? { ...o, registrada: true, hora } : o))
+    );
     setReferencia("");
     setMensaje("Registrada correctamente");
     setTipoMensaje("green");
@@ -210,7 +215,9 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
             <div>
               <h1 className="text-3xl font-bold text-slate-950">Pantalla interactor</h1>
               <p className="mt-2 text-slate-600">Solo puede registrar referencias.</p>
-              <p className="mt-1 text-sm text-slate-500">Interactor activo: {interactores.find(i => i.usuario === usuario)?.nombre || usuario}</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Interactor activo: {interactores.find((i) => i.usuario === usuario)?.nombre || usuario}
+              </p>
             </div>
             <LogoutButton onLogout={onLogout} />
           </div>
@@ -226,9 +233,13 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
               placeholder="Referencia"
               className="h-14 flex-1 rounded-xl border border-slate-200 px-4 text-lg outline-none"
             />
-            <button onClick={registrar} className="h-14 rounded-xl bg-slate-950 px-8 text-white font-semibold">Registrar</button>
+            <button onClick={registrar} className="h-14 rounded-xl bg-slate-950 px-8 text-white font-semibold">
+              Registrar
+            </button>
           </div>
-          <div className="mt-4"><Badge tone={tipoMensaje}>{mensaje || "Esperando referencia"}</Badge></div>
+          <div className="mt-4">
+            <Badge tone={tipoMensaje}>{mensaje || "Esperando referencia"}</Badge>
+          </div>
         </Card>
       </div>
     </div>
@@ -275,12 +286,14 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
               </thead>
               <tbody>
                 {votsResp.map((o) => (
-                  <tr key={o.id || o.referencia} className="border-t border-slate-200">
+                  <tr key={o.id} className="border-t border-slate-200">
                     <td className="px-4 py-3 font-semibold">{o.referencia}</td>
                     <td className="px-4 py-3">{o.nombre}</td>
                     <td className="px-4 py-3">{o.telefono}</td>
                     <td className="px-4 py-3">{o.hora || "-"}</td>
-                    <td className="px-4 py-3">{o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}</td>
+                    <td className="px-4 py-3">
+                      {o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -292,7 +305,15 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
   );
 }
 
-function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsables, interactores, setInteractores }) {
+function CooperativaScreen({
+  onLogout,
+  vots,
+  setVots,
+  responsables,
+  setResponsables,
+  interactores,
+  setInteractores,
+}) {
   const [nuevaReferencia, setNuevaReferencia] = useState("");
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [nuevoTelefono, setNuevoTelefono] = useState("");
@@ -321,7 +342,8 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
 
     if (votEditando) {
       const votActual = vots.find((v) => v.id === votEditando);
-      if (votActual?.id && !String(votActual.id).startsWith("seed-")) {
+
+      if (votActual?.id) {
         await updateDoc(doc(db, "vots", votActual.id), {
           referencia: ref,
           nombre: nuevoNombre,
@@ -330,16 +352,26 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
         });
       }
 
-      setVots(prev => prev.map(v => v.id === votEditando ? {
-        ...v,
-        referencia: ref,
-        nombre: nuevoNombre,
-        telefono: nuevoTelefono,
-        responsableId: Number(nuevoResponsableId),
-      } : v));
+      setVots((prev) =>
+        prev.map((v) =>
+          v.id === votEditando
+            ? {
+                ...v,
+                referencia: ref,
+                nombre: nuevoNombre,
+                telefono: nuevoTelefono,
+                responsableId: Number(nuevoResponsableId),
+              }
+            : v
+        )
+      );
       setVotEditando(null);
     } else {
-      if (vots.some((o) => o.referencia === ref)) return;
+      if (vots.some((o) => o.referencia === ref)) {
+        alert("La referencia ya existe");
+        return;
+      }
+
       const nuevoVot = {
         referencia: ref,
         nombre: nuevoNombre,
@@ -350,7 +382,7 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
       };
 
       const docRef = await addDoc(collection(db, "vots"), nuevoVot);
-      setVots(prev => [...prev, { id: docRef.id, ...nuevoVot }]);
+      setVots((prev) => [...prev, { id: docRef.id, ...nuevoVot }]);
     }
 
     setNuevaReferencia("");
@@ -368,17 +400,16 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
 
   const eliminarVot = async (id) => {
     if (!window.confirm("¿Eliminar este VOT?")) return;
-    if (id && !String(id).startsWith("seed-")) {
-      await deleteDoc(doc(db, "vots", id));
-    }
-    setVots(prev => prev.filter(v => v.id !== id));
+    await deleteDoc(doc(db, "vots", id));
+    setVots((prev) => prev.filter((v) => v.id !== id));
   };
 
-  const importarExcel = async (event) => {
+  const importarExcel = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
+
     reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target.result);
@@ -433,23 +464,47 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
     event.target.value = "";
   };
 
-  const crearOActualizarResponsable = () => {
+  const crearOActualizarResponsable = async () => {
     if (!nombreResponsable || !passwordResponsable) return;
+
     if (responsableEditando) {
-      setResponsables(prev => prev.map(r => r.id === responsableEditando ? {
-        ...r,
-        nombre: nombreResponsable,
-        telefono: telefonoResponsable,
-        password: passwordResponsable,
-      } : r));
+      const actual = responsables.find((r) => r.id === responsableEditando);
+
+      if (actual?.id) {
+        await updateDoc(doc(db, "responsables", actual.id), {
+          nombre: nombreResponsable,
+          telefono: telefonoResponsable,
+          password: passwordResponsable,
+        });
+      }
+
+      setResponsables((prev) =>
+        prev.map((r) =>
+          r.id === responsableEditando
+            ? {
+                ...r,
+                nombre: nombreResponsable,
+                telefono: telefonoResponsable,
+                password: passwordResponsable,
+              }
+            : r
+        )
+      );
+
       setResponsableEditando(null);
     } else {
       const usuario = nombreResponsable.toLowerCase().split(" ")[0];
-      setResponsables([
-        ...responsables,
-        { id: Date.now(), nombre: nombreResponsable, telefono: telefonoResponsable, usuario, password: passwordResponsable },
-      ]);
+      const nuevoResponsable = {
+        nombre: nombreResponsable,
+        telefono: telefonoResponsable,
+        usuario,
+        password: passwordResponsable,
+      };
+
+      const docRef = await addDoc(collection(db, "responsables"), nuevoResponsable);
+      setResponsables((prev) => [...prev, { id: docRef.id, ...nuevoResponsable }]);
     }
+
     setNombreResponsable("");
     setTelefonoResponsable("");
     setPasswordResponsable("");
@@ -462,32 +517,59 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
     setPasswordResponsable(r.password);
   };
 
-  const eliminarResponsable = (id) => {
-    if (vots.some(v => v.responsableId === id)) {
+  const eliminarResponsable = async (id) => {
+    if (vots.some((v) => v.responsableId === id)) {
       alert("No puedes eliminar un responsable con VOTs asignados.");
       return;
     }
     if (!window.confirm("¿Eliminar este responsable?")) return;
-    setResponsables(prev => prev.filter(r => r.id !== id));
+
+    await deleteDoc(doc(db, "responsables", id));
+    setResponsables((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const crearOActualizarInteractor = () => {
+  const crearOActualizarInteractor = async () => {
     if (!nombreInteractor || !passwordInteractor) return;
+
     if (interactorEditando) {
-      setInteractores(prev => prev.map(i => i.id === interactorEditando ? {
-        ...i,
-        nombre: nombreInteractor,
-        telefono: telefonoInteractor,
-        password: passwordInteractor,
-      } : i));
+      const actual = interactores.find((i) => i.id === interactorEditando);
+
+      if (actual?.id) {
+        await updateDoc(doc(db, "interactores", actual.id), {
+          nombre: nombreInteractor,
+          telefono: telefonoInteractor,
+          password: passwordInteractor,
+        });
+      }
+
+      setInteractores((prev) =>
+        prev.map((i) =>
+          i.id === interactorEditando
+            ? {
+                ...i,
+                nombre: nombreInteractor,
+                telefono: telefonoInteractor,
+                password: passwordInteractor,
+              }
+            : i
+        )
+      );
+
       setInteractorEditando(null);
     } else {
       const usuario = nombreInteractor.toLowerCase().split(" ")[0] + interactores.length;
-      setInteractores([
-        ...interactores,
-        { id: Date.now(), nombre: nombreInteractor, telefono: telefonoInteractor, usuario, password: passwordInteractor, activo: true },
-      ]);
+      const nuevoInteractor = {
+        nombre: nombreInteractor,
+        telefono: telefonoInteractor,
+        usuario,
+        password: passwordInteractor,
+        activo: true,
+      };
+
+      const docRef = await addDoc(collection(db, "interactores"), nuevoInteractor);
+      setInteractores((prev) => [...prev, { id: docRef.id, ...nuevoInteractor }]);
     }
+
     setNombreInteractor("");
     setTelefonoInteractor("");
     setPasswordInteractor("");
@@ -500,9 +582,10 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
     setPasswordInteractor(i.password);
   };
 
-  const eliminarInteractor = (id) => {
+  const eliminarInteractor = async (id) => {
     if (!window.confirm("¿Eliminar este interactor?")) return;
-    setInteractores(prev => prev.filter(i => i.id !== id));
+    await deleteDoc(doc(db, "interactores", id));
+    setInteractores((prev) => prev.filter((i) => i.id !== id));
   };
 
   return (
@@ -528,13 +611,38 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
           <Card>
             <h2 className="text-lg font-bold text-slate-950">{votEditando ? "Editar VOT" : "Alta de VOT"}</h2>
             <div className="mt-4 space-y-3">
-              <input value={nuevaReferencia} onChange={(e) => setNuevaReferencia(e.target.value.toUpperCase())} placeholder="Referencia" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <input value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <input value={nuevoTelefono} onChange={(e) => setNuevoTelefono(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <select value={nuevoResponsableId} onChange={(e) => setNuevoResponsableId(e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none">
-                {responsables.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+              <input
+                value={nuevaReferencia}
+                onChange={(e) => setNuevaReferencia(e.target.value.toUpperCase())}
+                placeholder="Referencia"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
+                value={nuevoNombre}
+                onChange={(e) => setNuevoNombre(e.target.value)}
+                placeholder="Nombre"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
+                value={nuevoTelefono}
+                onChange={(e) => setNuevoTelefono(e.target.value)}
+                placeholder="Teléfono"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <select
+                value={nuevoResponsableId}
+                onChange={(e) => setNuevoResponsableId(e.target.value)}
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              >
+                {responsables.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.nombre}
+                  </option>
+                ))}
               </select>
-              <button onClick={crearOActualizarVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{votEditando ? "Guardar cambios" : "Crear VOT"}</button>
+              <button onClick={crearOActualizarVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">
+                {votEditando ? "Guardar cambios" : "Crear VOT"}
+              </button>
             </div>
           </Card>
 
@@ -549,24 +657,70 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">{responsableEditando ? "Editar responsable" : "Alta de responsable"}</h2>
+            <h2 className="text-lg font-bold text-slate-950">
+              {responsableEditando ? "Editar responsable" : "Alta de responsable"}
+            </h2>
             <div className="mt-4 space-y-3">
-              <input value={nombreResponsable} onChange={(e) => setNombreResponsable(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <input value={telefonoResponsable} onChange={(e) => setTelefonoResponsable(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <input type="password" value={passwordResponsable} onChange={(e) => setPasswordResponsable(e.target.value)} placeholder="Contraseña" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <button onClick={crearOActualizarResponsable} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{responsableEditando ? "Guardar cambios" : "Crear responsable"}</button>
+              <input
+                value={nombreResponsable}
+                onChange={(e) => setNombreResponsable(e.target.value)}
+                placeholder="Nombre"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
+                value={telefonoResponsable}
+                onChange={(e) => setTelefonoResponsable(e.target.value)}
+                placeholder="Teléfono"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
+                type="password"
+                value={passwordResponsable}
+                onChange={(e) => setPasswordResponsable(e.target.value)}
+                placeholder="Contraseña"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <button
+                onClick={crearOActualizarResponsable}
+                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
+              >
+                {responsableEditando ? "Guardar cambios" : "Crear responsable"}
+              </button>
             </div>
           </Card>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">{interactorEditando ? "Editar interactor" : "Alta de interactor"}</h2>
+            <h2 className="text-lg font-bold text-slate-950">
+              {interactorEditando ? "Editar interactor" : "Alta de interactor"}
+            </h2>
             <div className="mt-4 space-y-3">
-              <input value={nombreInteractor} onChange={(e) => setNombreInteractor(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <input value={telefonoInteractor} onChange={(e) => setTelefonoInteractor(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <input type="password" value={passwordInteractor} onChange={(e) => setPasswordInteractor(e.target.value)} placeholder="Contraseña" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <button onClick={crearOActualizarInteractor} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{interactorEditando ? "Guardar cambios" : "Crear interactor"}</button>
+              <input
+                value={nombreInteractor}
+                onChange={(e) => setNombreInteractor(e.target.value)}
+                placeholder="Nombre"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
+                value={telefonoInteractor}
+                onChange={(e) => setTelefonoInteractor(e.target.value)}
+                placeholder="Teléfono"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
+                type="password"
+                value={passwordInteractor}
+                onChange={(e) => setPasswordInteractor(e.target.value)}
+                placeholder="Contraseña"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <button
+                onClick={crearOActualizarInteractor}
+                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
+              >
+                {interactorEditando ? "Guardar cambios" : "Crear interactor"}
+              </button>
             </div>
           </Card>
 
@@ -586,7 +740,7 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
                   {vots.map((o) => {
                     const responsable = responsables.find((r) => r.id === o.responsableId);
                     return (
-                      <tr key={o.id || o.referencia} className="border-t border-slate-200">
+                      <tr key={o.id} className="border-t border-slate-200">
                         <td className="px-4 py-3 font-semibold">{o.referencia}</td>
                         <td className="px-4 py-3">{o.nombre}</td>
                         <td className="px-4 py-3">{responsable?.nombre}</td>
@@ -675,41 +829,66 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
 
 export default function App() {
   const [sesion, setSesion] = useState(null);
-  const [vots, setVots] = useState(votsIniciales);
-  const [responsables, setResponsables] = useState(responsablesIniciales);
-  const [interactores, setInteractores] = useState(interactoresIniciales);
+  const [vots, setVots] = useState([]);
+  const [responsables, setResponsables] = useState([]);
+  const [interactores, setInteractores] = useState([]);
   const [cargadoNube, setCargadoNube] = useState(false);
 
   useEffect(() => {
-    const cargarVots = async () => {
+    const cargarDatos = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "vots"));
-        const datos = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-        if (datos.length > 0) {
-          setVots(datos);
-        }
+        const [snapVots, snapResponsables, snapInteractores] = await Promise.all([
+          getDocs(collection(db, "vots")),
+          getDocs(collection(db, "responsables")),
+          getDocs(collection(db, "interactores")),
+        ]);
+
+        const datosVots = snapVots.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const datosResponsables = snapResponsables.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const datosInteractores = snapInteractores.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        setVots(datosVots);
+        setResponsables(datosResponsables);
+        setInteractores(datosInteractores);
       } catch (error) {
-        console.error("Error cargando VOTs desde Firebase", error);
+        console.error("Error cargando datos desde Firebase", error);
       } finally {
         setCargadoNube(true);
       }
     };
 
-    cargarVots();
+    cargarDatos();
   }, []);
 
   if (!cargadoNube) {
     return <div className="min-h-screen bg-slate-100 p-8 text-slate-700">Cargando datos...</div>;
   }
 
-  if (!sesion) return <LoginScreen onLogin={setSesion} responsables={responsables} interactores={interactores} />;
+  if (!sesion) {
+    return <LoginScreen onLogin={setSesion} responsables={responsables} interactores={interactores} />;
+  }
 
   if (sesion.rol === "interactor") {
-    return <InteractorScreen onLogout={() => setSesion(null)} vots={vots} setVots={setVots} usuario={sesion.usuario} interactores={interactores} />;
+    return (
+      <InteractorScreen
+        onLogout={() => setSesion(null)}
+        vots={vots}
+        setVots={setVots}
+        usuario={sesion.usuario}
+        interactores={interactores}
+      />
+    );
   }
 
   if (sesion.rol === "responsable") {
-    return <ResponsableScreen onLogout={() => setSesion(null)} usuario={sesion.usuario} vots={vots} responsables={responsables} />;
+    return (
+      <ResponsableScreen
+        onLogout={() => setSesion(null)}
+        usuario={sesion.usuario}
+        vots={vots}
+        responsables={responsables}
+      />
+    );
   }
 
   return (
