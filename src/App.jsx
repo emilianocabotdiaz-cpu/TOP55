@@ -1,7 +1,14 @@
-import { db } from "./firebase"
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
+import { db } from "./firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 const responsablesIniciales = [
   { id: 1, nombre: "Juan Pérez", telefono: "600111222", usuario: "juan", password: "1234" },
@@ -15,12 +22,12 @@ const interactoresIniciales = [
 ];
 
 const votsIniciales = [
-  { referencia: "ES-001245", nombre: "Luna", telefono: "600000001", responsableId: 1, hora: "18:41", registrada: true },
-  { referencia: "ES-001246", nombre: "Perla", telefono: "600000002", responsableId: 1, hora: null, registrada: false },
-  { referencia: "ES-004112", nombre: "Estrella", telefono: "600000003", responsableId: 2, hora: "18:37", registrada: true },
-  { referencia: "ES-005010", nombre: "Sol", telefono: "600000004", responsableId: 2, hora: null, registrada: false },
-  { referencia: "ES-008921", nombre: "Nieve", telefono: "600000005", responsableId: 3, hora: "18:39", registrada: true },
-  { referencia: "ES-009101", nombre: "Sombra", telefono: "600000006", responsableId: 3, hora: null, registrada: false },
+  { id: "seed-1", referencia: "ES-001245", nombre: "Luna", telefono: "600000001", responsableId: 1, hora: "18:41", registrada: true },
+  { id: "seed-2", referencia: "ES-001246", nombre: "Perla", telefono: "600000002", responsableId: 1, hora: null, registrada: false },
+  { id: "seed-3", referencia: "ES-004112", nombre: "Estrella", telefono: "600000003", responsableId: 2, hora: "18:37", registrada: true },
+  { id: "seed-4", referencia: "ES-005010", nombre: "Sol", telefono: "600000004", responsableId: 2, hora: null, registrada: false },
+  { id: "seed-5", referencia: "ES-008921", nombre: "Nieve", telefono: "600000005", responsableId: 3, hora: "18:39", registrada: true },
+  { id: "seed-6", referencia: "ES-009101", nombre: "Sombra", telefono: "600000006", responsableId: 3, hora: null, registrada: false },
 ];
 
 function Badge({ children, tone = "gray" }) {
@@ -54,6 +61,18 @@ function LogoutButton({ onLogout }) {
   return (
     <button onClick={onLogout} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium">
       Salir
+    </button>
+  );
+}
+
+function ActionButton({ children, onClick, tone = "default" }) {
+  const classes = {
+    default: "border border-slate-200 text-slate-700",
+    danger: "border border-rose-200 text-rose-700 bg-rose-50",
+  };
+  return (
+    <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}`}>
+      {children}
     </button>
   );
 }
@@ -154,7 +173,7 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
 
-  const registrar = () => {
+  const registrar = async () => {
     const ref = referencia.trim().toUpperCase();
     if (!ref) return;
 
@@ -172,6 +191,11 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
     }
 
     const hora = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+
+    if (existe.id && !String(existe.id).startsWith("seed-")) {
+      await updateDoc(doc(db, "vots", existe.id), { registrada: true, hora });
+    }
+
     setVots((prev) => prev.map((o) => (o.referencia === ref ? { ...o, registrada: true, hora } : o)));
     setReferencia("");
     setMensaje("Registrada correctamente");
@@ -251,7 +275,7 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
               </thead>
               <tbody>
                 {votsResp.map((o) => (
-                  <tr key={o.referencia} className="border-t border-slate-200">
+                  <tr key={o.id || o.referencia} className="border-t border-slate-200">
                     <td className="px-4 py-3 font-semibold">{o.referencia}</td>
                     <td className="px-4 py-3">{o.nombre}</td>
                     <td className="px-4 py-3">{o.telefono}</td>
@@ -283,37 +307,79 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
   const [telefonoInteractor, setTelefonoInteractor] = useState("");
   const [passwordInteractor, setPasswordInteractor] = useState("");
 
+  const [votEditando, setVotEditando] = useState(null);
+  const [responsableEditando, setResponsableEditando] = useState(null);
+  const [interactorEditando, setInteractorEditando] = useState(null);
+
   const total = vots.length;
   const llegadas = vots.filter((o) => o.registrada).length;
   const pendientes = total - llegadas;
 
-  const crearVot = () => {
+  const crearOActualizarVot = async () => {
     if (!nuevaReferencia || !nuevoResponsableId) return;
-    if (vots.some((o) => o.referencia === nuevaReferencia.toUpperCase())) return;
+    const ref = nuevaReferencia.toUpperCase();
 
-    setVots([
-      ...vots,
-      {
-        referencia: nuevaReferencia.toUpperCase(),
+    if (votEditando) {
+      const votActual = vots.find((v) => v.id === votEditando);
+      if (votActual?.id && !String(votActual.id).startsWith("seed-")) {
+        await updateDoc(doc(db, "vots", votActual.id), {
+          referencia: ref,
+          nombre: nuevoNombre,
+          telefono: nuevoTelefono,
+          responsableId: Number(nuevoResponsableId),
+        });
+      }
+
+      setVots(prev => prev.map(v => v.id === votEditando ? {
+        ...v,
+        referencia: ref,
+        nombre: nuevoNombre,
+        telefono: nuevoTelefono,
+        responsableId: Number(nuevoResponsableId),
+      } : v));
+      setVotEditando(null);
+    } else {
+      if (vots.some((o) => o.referencia === ref)) return;
+      const nuevoVot = {
+        referencia: ref,
         nombre: nuevoNombre,
         telefono: nuevoTelefono,
         responsableId: Number(nuevoResponsableId),
         hora: null,
         registrada: false,
-      },
-    ]);
+      };
+
+      const docRef = await addDoc(collection(db, "vots"), nuevoVot);
+      setVots(prev => [...prev, { id: docRef.id, ...nuevoVot }]);
+    }
 
     setNuevaReferencia("");
     setNuevoNombre("");
     setNuevoTelefono("");
   };
 
-  const importarExcel = (event) => {
+  const editarVot = (v) => {
+    setVotEditando(v.id);
+    setNuevaReferencia(v.referencia);
+    setNuevoNombre(v.nombre);
+    setNuevoTelefono(v.telefono);
+    setNuevoResponsableId(String(v.responsableId));
+  };
+
+  const eliminarVot = async (id) => {
+    if (!window.confirm("¿Eliminar este VOT?")) return;
+    if (id && !String(id).startsWith("seed-")) {
+      await deleteDoc(doc(db, "vots", id));
+    }
+    setVots(prev => prev.filter(v => v.id !== id));
+  };
+
+  const importarExcel = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
@@ -324,35 +390,37 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
         let importados = 0;
         let errores = 0;
         const existentes = new Set(vots.map((v) => v.referencia));
-
         const nuevos = [];
 
-        filas.forEach((fila) => {
+        for (const fila of filas) {
           const referencia = String(fila.referencia || "").trim().toUpperCase();
           const nombre = String(fila.nombre || "").trim();
           const telefono = String(fila.telefono || "").trim();
-          const nombreResponsable = String(fila.responsable || "").trim().toLowerCase();
+          const nombreResponsableExcel = String(fila.responsable || "").trim().toLowerCase();
 
           const responsable = responsables.find(
-            (r) => r.nombre.trim().toLowerCase() === nombreResponsable
+            (r) => r.nombre.trim().toLowerCase() === nombreResponsableExcel
           );
 
           if (!referencia || !responsable || existentes.has(referencia)) {
             errores += 1;
-            return;
+            continue;
           }
 
-          existentes.add(referencia);
-          nuevos.push({
+          const nuevo = {
             referencia,
             nombre,
             telefono,
             responsableId: responsable.id,
             hora: null,
             registrada: false,
-          });
+          };
+
+          const docRef = await addDoc(collection(db, "vots"), nuevo);
+          nuevos.push({ id: docRef.id, ...nuevo });
+          existentes.add(referencia);
           importados += 1;
-        });
+        }
 
         if (nuevos.length) setVots((prev) => [...prev, ...nuevos]);
         setMensajeImportacion(`Importación completada. Correctos: ${importados}. Errores: ${errores}.`);
@@ -365,28 +433,76 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
     event.target.value = "";
   };
 
-  const crearResponsable = () => {
+  const crearOActualizarResponsable = () => {
     if (!nombreResponsable || !passwordResponsable) return;
-    const usuario = nombreResponsable.toLowerCase().split(" ")[0];
-    setResponsables([
-      ...responsables,
-      { id: Date.now(), nombre: nombreResponsable, telefono: telefonoResponsable, usuario, password: passwordResponsable },
-    ]);
+    if (responsableEditando) {
+      setResponsables(prev => prev.map(r => r.id === responsableEditando ? {
+        ...r,
+        nombre: nombreResponsable,
+        telefono: telefonoResponsable,
+        password: passwordResponsable,
+      } : r));
+      setResponsableEditando(null);
+    } else {
+      const usuario = nombreResponsable.toLowerCase().split(" ")[0];
+      setResponsables([
+        ...responsables,
+        { id: Date.now(), nombre: nombreResponsable, telefono: telefonoResponsable, usuario, password: passwordResponsable },
+      ]);
+    }
     setNombreResponsable("");
     setTelefonoResponsable("");
     setPasswordResponsable("");
   };
 
-  const crearInteractor = () => {
+  const editarResponsable = (r) => {
+    setResponsableEditando(r.id);
+    setNombreResponsable(r.nombre);
+    setTelefonoResponsable(r.telefono);
+    setPasswordResponsable(r.password);
+  };
+
+  const eliminarResponsable = (id) => {
+    if (vots.some(v => v.responsableId === id)) {
+      alert("No puedes eliminar un responsable con VOTs asignados.");
+      return;
+    }
+    if (!window.confirm("¿Eliminar este responsable?")) return;
+    setResponsables(prev => prev.filter(r => r.id !== id));
+  };
+
+  const crearOActualizarInteractor = () => {
     if (!nombreInteractor || !passwordInteractor) return;
-    const usuario = nombreInteractor.toLowerCase().split(" ")[0] + interactores.length;
-    setInteractores([
-      ...interactores,
-      { id: Date.now(), nombre: nombreInteractor, telefono: telefonoInteractor, usuario, password: passwordInteractor, activo: true },
-    ]);
+    if (interactorEditando) {
+      setInteractores(prev => prev.map(i => i.id === interactorEditando ? {
+        ...i,
+        nombre: nombreInteractor,
+        telefono: telefonoInteractor,
+        password: passwordInteractor,
+      } : i));
+      setInteractorEditando(null);
+    } else {
+      const usuario = nombreInteractor.toLowerCase().split(" ")[0] + interactores.length;
+      setInteractores([
+        ...interactores,
+        { id: Date.now(), nombre: nombreInteractor, telefono: telefonoInteractor, usuario, password: passwordInteractor, activo: true },
+      ]);
+    }
     setNombreInteractor("");
     setTelefonoInteractor("");
     setPasswordInteractor("");
+  };
+
+  const editarInteractor = (i) => {
+    setInteractorEditando(i.id);
+    setNombreInteractor(i.nombre);
+    setTelefonoInteractor(i.telefono);
+    setPasswordInteractor(i.password);
+  };
+
+  const eliminarInteractor = (id) => {
+    if (!window.confirm("¿Eliminar este interactor?")) return;
+    setInteractores(prev => prev.filter(i => i.id !== id));
   };
 
   return (
@@ -410,7 +526,7 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
 
         <div className="grid gap-6 xl:grid-cols-3">
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Alta de VOT</h2>
+            <h2 className="text-lg font-bold text-slate-950">{votEditando ? "Editar VOT" : "Alta de VOT"}</h2>
             <div className="mt-4 space-y-3">
               <input value={nuevaReferencia} onChange={(e) => setNuevaReferencia(e.target.value.toUpperCase())} placeholder="Referencia" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
               <input value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
@@ -418,7 +534,7 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
               <select value={nuevoResponsableId} onChange={(e) => setNuevoResponsableId(e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none">
                 {responsables.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
               </select>
-              <button onClick={crearVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">Crear VOT</button>
+              <button onClick={crearOActualizarVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{votEditando ? "Guardar cambios" : "Crear VOT"}</button>
             </div>
           </Card>
 
@@ -427,63 +543,126 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
             <p className="mt-2 text-sm text-slate-500">Columnas: referencia, nombre, telefono, responsable</p>
             <div className="mt-4 space-y-3">
               <input type="file" accept=".xlsx,.xls" onChange={importarExcel} className="block w-full text-sm text-slate-700" />
-              <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
-                Ejemplo responsable: Juan Pérez
-              </div>
+              <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Ejemplo responsable: Juan Pérez</div>
               {mensajeImportacion ? <Badge tone="gray">{mensajeImportacion}</Badge> : null}
             </div>
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Alta de responsable</h2>
+            <h2 className="text-lg font-bold text-slate-950">{responsableEditando ? "Editar responsable" : "Alta de responsable"}</h2>
             <div className="mt-4 space-y-3">
               <input value={nombreResponsable} onChange={(e) => setNombreResponsable(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
               <input value={telefonoResponsable} onChange={(e) => setTelefonoResponsable(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
               <input type="password" value={passwordResponsable} onChange={(e) => setPasswordResponsable(e.target.value)} placeholder="Contraseña" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <button onClick={crearResponsable} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">Crear responsable</button>
+              <button onClick={crearOActualizarResponsable} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{responsableEditando ? "Guardar cambios" : "Crear responsable"}</button>
             </div>
           </Card>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Alta de interactor</h2>
+            <h2 className="text-lg font-bold text-slate-950">{interactorEditando ? "Editar interactor" : "Alta de interactor"}</h2>
             <div className="mt-4 space-y-3">
               <input value={nombreInteractor} onChange={(e) => setNombreInteractor(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
               <input value={telefonoInteractor} onChange={(e) => setTelefonoInteractor(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
               <input type="password" value={passwordInteractor} onChange={(e) => setPasswordInteractor(e.target.value)} placeholder="Contraseña" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
-              <button onClick={crearInteractor} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">Crear interactor</button>
+              <button onClick={crearOActualizarInteractor} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{interactorEditando ? "Guardar cambios" : "Crear interactor"}</button>
             </div>
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Consulta general</h2>
-            <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
+            <h2 className="text-lg font-bold text-slate-950">Listado de VOTs</h2>
+            <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-100 text-slate-800">
                   <tr>
                     <th className="px-4 py-3 text-left">Referencia</th>
                     <th className="px-4 py-3 text-left">Nombre</th>
-                    <th className="px-4 py-3 text-left">Teléfono</th>
                     <th className="px-4 py-3 text-left">Responsable</th>
-                    <th className="px-4 py-3 text-left">Hora</th>
-                    <th className="px-4 py-3 text-left">Estado</th>
+                    <th className="px-4 py-3 text-left">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {vots.map((o) => {
                     const responsable = responsables.find((r) => r.id === o.responsableId);
                     return (
-                      <tr key={o.referencia} className="border-t border-slate-200">
+                      <tr key={o.id || o.referencia} className="border-t border-slate-200">
                         <td className="px-4 py-3 font-semibold">{o.referencia}</td>
                         <td className="px-4 py-3">{o.nombre}</td>
-                        <td className="px-4 py-3">{o.telefono}</td>
                         <td className="px-4 py-3">{responsable?.nombre}</td>
-                        <td className="px-4 py-3">{o.hora || "-"}</td>
-                        <td className="px-4 py-3">{o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2">
+                            <ActionButton onClick={() => editarVot(o)}>Editar</ActionButton>
+                            <ActionButton tone="danger" onClick={() => eliminarVot(o.id)}>Eliminar</ActionButton>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <Card>
+            <h2 className="text-lg font-bold text-slate-950">Listado de responsables</h2>
+            <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
+              <table className="min-w-full text-sm">
+                <thead className="bg-slate-100 text-slate-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Nombre</th>
+                    <th className="px-4 py-3 text-left">Teléfono</th>
+                    <th className="px-4 py-3 text-left">Usuario</th>
+                    <th className="px-4 py-3 text-left">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {responsables.map((r) => (
+                    <tr key={r.id} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold">{r.nombre}</td>
+                      <td className="px-4 py-3">{r.telefono}</td>
+                      <td className="px-4 py-3">{r.usuario}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <ActionButton onClick={() => editarResponsable(r)}>Editar</ActionButton>
+                          <ActionButton tone="danger" onClick={() => eliminarResponsable(r.id)}>Eliminar</ActionButton>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <Card>
+            <h2 className="text-lg font-bold text-slate-950">Listado de interactores</h2>
+            <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
+              <table className="min-w-full text-sm">
+                <thead className="bg-slate-100 text-slate-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Nombre</th>
+                    <th className="px-4 py-3 text-left">Teléfono</th>
+                    <th className="px-4 py-3 text-left">Usuario</th>
+                    <th className="px-4 py-3 text-left">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {interactores.map((i) => (
+                    <tr key={i.id} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold">{i.nombre}</td>
+                      <td className="px-4 py-3">{i.telefono}</td>
+                      <td className="px-4 py-3">{i.usuario}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <ActionButton onClick={() => editarInteractor(i)}>Editar</ActionButton>
+                          <ActionButton tone="danger" onClick={() => eliminarInteractor(i.id)}>Eliminar</ActionButton>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -499,6 +678,29 @@ export default function App() {
   const [vots, setVots] = useState(votsIniciales);
   const [responsables, setResponsables] = useState(responsablesIniciales);
   const [interactores, setInteractores] = useState(interactoresIniciales);
+  const [cargadoNube, setCargadoNube] = useState(false);
+
+  useEffect(() => {
+    const cargarVots = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "vots"));
+        const datos = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (datos.length > 0) {
+          setVots(datos);
+        }
+      } catch (error) {
+        console.error("Error cargando VOTs desde Firebase", error);
+      } finally {
+        setCargadoNube(true);
+      }
+    };
+
+    cargarVots();
+  }, []);
+
+  if (!cargadoNube) {
+    return <div className="min-h-screen bg-slate-100 p-8 text-slate-700">Cargando datos...</div>;
+  }
 
   if (!sesion) return <LoginScreen onLogin={setSesion} responsables={responsables} interactores={interactores} />;
 
@@ -522,5 +724,3 @@ export default function App() {
     />
   );
 }
-const supabaseUrl = 'https://rxqpkdwvtbhaxpyaogww.supabase.co'
-const supabaseKey = 'sb_publishable_MSUzmi3QIgjOerwYw9mUBA_b95yQFoQ' 
