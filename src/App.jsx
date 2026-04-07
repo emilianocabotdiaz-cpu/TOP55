@@ -434,8 +434,9 @@ function CooperativaScreen({ onLogout, vots, setVots, responsables, setResponsab
           importados += 1;
         }
 
+        
         if (nuevos.length) setVots((prev) => [...prev, ...nuevos]);
-        setMensajeImportacion(Importación completada. Correctos: ${importados}. Errores: ${errores}.);
+       setMensajeImportacion(`Importación completada. Correctos: ${importados}. Errores: ${errores}.`);
       } catch (error) {
         setMensajeImportacion("Error al leer el Excel.");
       }
