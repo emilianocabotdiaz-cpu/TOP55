@@ -253,6 +253,7 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
   const llegadas = votsResp.filter((o) => o.registrada).length;
   const pendientes = votsResp.length - llegadas;
 
+ 
   const abrirWhatsApp = (telefono, nombre) => {
     if (!telefono) {
       alert("Este registro no tiene teléfono");
@@ -316,12 +317,12 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
                       {o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => abrirWhatsApp(o.telefono, o.nombre)}
-                        className="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white"
-                      >
-                        WhatsApp
-                      </button>
+                     <button
+  onClick={() => abrirWhatsApp(o.telefono, o.nombre)}
+  className="flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white"
+>
+  <span>📱</span> WhatsApp
+</button>
                     </td>
                   </tr>
                 ))}
