@@ -75,12 +75,18 @@ function ActionButton({ children, onClick, tone = "default" }) {
   const classes = {
     default: "border border-slate-200 text-slate-700",
     danger: "border border-rose-200 text-rose-700 bg-rose-50",
+    dark: "bg-slate-950 text-white",
   };
+
   return (
-    <button onClick={onClick} className={rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}}>
+    <button
+      onClick={onClick}
+      className={`rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}`}
+    >
       {children}
     </button>
   );
+
 }
 
 function LoginScreen({ onLogin, responsables, interactores }) {
