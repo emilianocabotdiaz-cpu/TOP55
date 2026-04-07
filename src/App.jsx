@@ -253,6 +253,25 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
   const llegadas = votsResp.filter((o) => o.registrada).length;
   const pendientes = votsResp.length - llegadas;
 
+  const abrirWhatsApp = (telefono, nombre) => {
+    if (!telefono) {
+      alert("Este registro no tiene teléfono");
+      return;
+    }
+
+    let numero = String(telefono).replace(/\D/g, "");
+    if (numero.length === 9) {
+      numero = `34${numero}`;
+    }
+
+    const mensaje = encodeURIComponent(
+      `Hola, contacto sobre el registro de ${nombre || "este VOT"}`
+    );
+
+    const url = `https://wa.me/${numero}?text=${mensaje}`;
+    window.open(url, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 px-5 py-6 md:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
@@ -283,6 +302,7 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
                   <th className="px-4 py-3 text-left">Teléfono</th>
                   <th className="px-4 py-3 text-left">Hora</th>
                   <th className="px-4 py-3 text-left">Estado</th>
+                  <th className="px-4 py-3 text-left">WhatsApp</th>
                 </tr>
               </thead>
               <tbody>
@@ -294,6 +314,14 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
                     <td className="px-4 py-3">{o.hora || "-"}</td>
                     <td className="px-4 py-3">
                       {o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => abrirWhatsApp(o.telefono, o.nombre)}
+                        className="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white"
+                      >
+                        WhatsApp
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -668,7 +696,7 @@ function CooperativaScreen({
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Importar Excel</h2>
+            <h2 className="text-lg font-bold text-slate-950">Importar / Exportar VOTs</h2>
             <p className="mt-2 text-sm text-slate-500">Columnas: referencia, nombre, telefono, responsable</p>
             <div className="mt-4 space-y-3">
               <input type="file" accept=".xlsx,.xls" onChange={importarExcel} className="block w-full text-sm text-slate-700" />
