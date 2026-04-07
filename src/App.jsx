@@ -520,3 +520,5 @@ export default function App() {
     />
   );
 }
+const supabaseUrl = 'https://rxqpkdwvtbhaxpyaogww.supabase.co'
+const supabaseKey = 'sb_publishable_MSUzmi3QIgjOerwYw9mUBA_b95yQFoQ' 
