@@ -37,12 +37,15 @@ function Badge({ children, tone = "gray" }) {
     amber: "bg-amber-100 text-amber-700",
     red: "bg-rose-100 text-rose-700",
   };
+
   return (
-    <span className={inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium ${styles[tone]}}>
+    <span className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium ${styles[tone]}`}>
       {children}
     </span>
   );
 }
+
+
 
 function Card({ children, className = "" }) {
   return <div className={rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm ${className}}>{children}</div>;
