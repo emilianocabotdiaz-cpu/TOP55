@@ -49,6 +49,7 @@ function ActionButton({ children, onClick, tone = "default" }) {
   const classes = {
     default: "border border-slate-200 text-slate-700",
     danger: "border border-rose-200 text-rose-700 bg-rose-50",
+    dark: "bg-slate-950 text-white",
   };
   return (
     <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}`}>
@@ -114,16 +115,8 @@ function LoginScreen({ onLogin, responsables, interactores }) {
             {rol === "responsable" && (
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">Responsable</label>
-                <select
-                  value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
-                  className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
-                >
-                  {responsables.map((r) => (
-                    <option key={r.id} value={r.usuario}>
-                      {r.nombre}
-                    </option>
-                  ))}
+                <select value={usuario} onChange={(e) => setUsuario(e.target.value)} className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none">
+                  {responsables.map((r) => <option key={r.id} value={r.usuario}>{r.nombre}</option>)}
                 </select>
               </div>
             )}
@@ -131,18 +124,8 @@ function LoginScreen({ onLogin, responsables, interactores }) {
             {rol === "interactor" && (
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">Interactor</label>
-                <select
-                  value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
-                  className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
-                >
-                  {interactores
-                    .filter((i) => i.activo)
-                    .map((i) => (
-                      <option key={i.id} value={i.usuario}>
-                        {i.nombre}
-                      </option>
-                    ))}
+                <select value={usuario} onChange={(e) => setUsuario(e.target.value)} className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none">
+                  {interactores.filter(i => i.activo).map((i) => <option key={i.id} value={i.usuario}>{i.nombre}</option>)}
                 </select>
               </div>
             )}
@@ -158,9 +141,7 @@ function LoginScreen({ onLogin, responsables, interactores }) {
               />
             </div>
 
-            <button onClick={entrar} className="h-12 w-full rounded-xl bg-slate-950 text-white font-semibold">
-              Entrar
-            </button>
+            <button onClick={entrar} className="h-12 w-full rounded-xl bg-slate-950 text-white font-semibold">Entrar</button>
           </div>
         </Card>
       </div>
@@ -190,18 +171,12 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
       return;
     }
 
-    const hora = new Date().toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
+    const hora = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
     if (existe.id) {
       await updateDoc(doc(db, "vots", existe.id), { registrada: true, hora });
     }
 
-    setVots((prev) =>
-      prev.map((o) => (o.referencia === ref ? { ...o, registrada: true, hora } : o))
-    );
+    setVots((prev) => prev.map((o) => (o.referencia === ref ? { ...o, registrada: true, hora } : o)));
     setReferencia("");
     setMensaje("Registrada correctamente");
     setTipoMensaje("green");
@@ -209,35 +184,33 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
 
   return (
     <div className="min-h-screen bg-slate-100 px-5 py-6 md:px-8">
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-slate-950">Pantalla interactor</h1>
               <p className="mt-2 text-slate-600">Solo puede registrar referencias.</p>
-              <p className="mt-1 text-sm text-slate-500">
-                Interactor activo: {interactores.find((i) => i.usuario === usuario)?.nombre || usuario}
-              </p>
+              <p className="mt-1 text-sm text-slate-500">Interactor activo: {interactores.find(i => i.usuario === usuario)?.nombre || usuario}</p>
             </div>
             <LogoutButton onLogout={onLogout} />
           </div>
         </Card>
 
         <Card>
-          <h2 className="text-xl font-bold text-slate-950">Registro de entrada</h2>
-          <div className="mt-5 flex flex-col gap-4 md:flex-row">
+          <h2 className="text-2xl font-bold text-slate-950">Registro de entrada</h2>
+          <div className="mt-6 space-y-4">
             <input
               value={referencia}
               onChange={(e) => setReferencia(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === "Enter" && registrar()}
-              placeholder="Referencia"
-              className="h-14 flex-1 rounded-xl border border-slate-200 px-4 text-lg outline-none"
+              placeholder="ESCRIBIR REFERENCIA"
+              className="h-24 w-full rounded-2xl border border-slate-200 px-6 text-center text-4xl font-bold tracking-wide outline-none"
             />
-            <button onClick={registrar} className="h-14 rounded-xl bg-slate-950 px-8 text-white font-semibold">
-              Registrar
+            <button onClick={registrar} className="h-20 w-full rounded-2xl bg-slate-950 text-2xl font-bold text-white">
+              REGISTRAR
             </button>
           </div>
-          <div className="mt-4">
+          <div className="mt-5 flex justify-center">
             <Badge tone={tipoMensaje}>{mensaje || "Esperando referencia"}</Badge>
           </div>
         </Card>
@@ -291,9 +264,7 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
                     <td className="px-4 py-3">{o.nombre}</td>
                     <td className="px-4 py-3">{o.telefono}</td>
                     <td className="px-4 py-3">{o.hora || "-"}</td>
-                    <td className="px-4 py-3">
-                      {o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}
-                    </td>
+                    <td className="px-4 py-3">{o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -336,13 +307,133 @@ function CooperativaScreen({
   const llegadas = vots.filter((o) => o.registrada).length;
   const pendientes = total - llegadas;
 
+  const exportarVotsPorResponsables = () => {
+    const datos = vots.map((v) => {
+      const responsable = responsables.find((r) => r.id === v.responsableId);
+      return {
+        referencia: v.referencia,
+        nombre: v.nombre,
+        telefono: v.telefono,
+        responsable: responsable?.nombre || "",
+        usuario_responsable: responsable?.usuario || "",
+        hora: v.hora || "",
+        registrada: v.registrada ? "sí" : "no",
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(datos);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "VOTs por responsables");
+    XLSX.writeFile(wb, "vots_por_responsables.xlsx");
+  };
+
+  const exportarInteractores = () => {
+    const datos = interactores.map((i) => ({
+      nombre: i.nombre,
+      telefono: i.telefono,
+      usuario: i.usuario,
+      password: i.password,
+      activo: i.activo ? "sí" : "no",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(datos);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Interactores");
+    XLSX.writeFile(wb, "interactores.xlsx");
+  };
+
+  const exportarVots = () => {
+    const datos = vots.map((v) => {
+      const responsable = responsables.find((r) => r.id === v.responsableId);
+      return {
+        referencia: v.referencia,
+        nombre: v.nombre,
+        telefono: v.telefono,
+        responsable: responsable?.nombre || "",
+        usuario_responsable: responsable?.usuario || "",
+        hora: v.hora || "",
+        registrada: v.registrada ? "sí" : "no",
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(datos);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "VOTs");
+    XLSX.writeFile(wb, "vots.xlsx");
+  };
+
+  const importarResponsables = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const hoja = workbook.Sheets[workbook.SheetNames[0]];
+        const filas = XLSX.utils.sheet_to_json(hoja);
+        const existentes = new Set(responsables.map((r) => r.usuario));
+        const nuevos = [];
+        for (const fila of filas) {
+          const nombre = String(fila.nombre || "").trim();
+          const telefono = String(fila.telefono || "").trim();
+          const usuario = String(fila.usuario || "").trim().toLowerCase();
+          const password = String(fila.password || "").trim();
+          if (!nombre || !usuario || !password || existentes.has(usuario)) continue;
+          const nuevo = { nombre, telefono, usuario, password };
+          const docRef = await addDoc(collection(db, "responsables"), nuevo);
+          nuevos.push({ id: docRef.id, ...nuevo });
+          existentes.add(usuario);
+        }
+        if (nuevos.length) setResponsables((prev) => [...prev, ...nuevos]);
+        setMensajeImportacion(`Responsables importados: ${nuevos.length}`);
+      } catch {
+        setMensajeImportacion("Error al importar responsables");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = "";
+  };
+
+  const importarInteractores = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const hoja = workbook.Sheets[workbook.SheetNames[0]];
+        const filas = XLSX.utils.sheet_to_json(hoja);
+        const existentes = new Set(interactores.map((i) => i.usuario));
+        const nuevos = [];
+        for (const fila of filas) {
+          const nombre = String(fila.nombre || "").trim();
+          const telefono = String(fila.telefono || "").trim();
+          const usuario = String(fila.usuario || "").trim().toLowerCase();
+          const password = String(fila.password || "").trim();
+          const activo = String(fila.activo || "sí").trim().toLowerCase() !== "no";
+          if (!nombre || !usuario || !password || existentes.has(usuario)) continue;
+          const nuevo = { nombre, telefono, usuario, password, activo };
+          const docRef = await addDoc(collection(db, "interactores"), nuevo);
+          nuevos.push({ id: docRef.id, ...nuevo });
+          existentes.add(usuario);
+        }
+        if (nuevos.length) setInteractores((prev) => [...prev, ...nuevos]);
+        setMensajeImportacion(`Interactores importados: ${nuevos.length}`);
+      } catch {
+        setMensajeImportacion("Error al importar interactores");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = "";
+  };
+
   const crearOActualizarVot = async () => {
     if (!nuevaReferencia || !nuevoResponsableId) return;
     const ref = nuevaReferencia.toUpperCase();
 
     if (votEditando) {
       const votActual = vots.find((v) => v.id === votEditando);
-
       if (votActual?.id) {
         await updateDoc(doc(db, "vots", votActual.id), {
           referencia: ref,
@@ -351,17 +442,10 @@ function CooperativaScreen({
           responsableId: Number(nuevoResponsableId),
         });
       }
-
       setVots((prev) =>
         prev.map((v) =>
           v.id === votEditando
-            ? {
-                ...v,
-                referencia: ref,
-                nombre: nuevoNombre,
-                telefono: nuevoTelefono,
-                responsableId: Number(nuevoResponsableId),
-              }
+            ? { ...v, referencia: ref, nombre: nuevoNombre, telefono: nuevoTelefono, responsableId: Number(nuevoResponsableId) }
             : v
         )
       );
@@ -371,16 +455,7 @@ function CooperativaScreen({
         alert("La referencia ya existe");
         return;
       }
-
-      const nuevoVot = {
-        referencia: ref,
-        nombre: nuevoNombre,
-        telefono: nuevoTelefono,
-        responsableId: Number(nuevoResponsableId),
-        hora: null,
-        registrada: false,
-      };
-
+      const nuevoVot = { referencia: ref, nombre: nuevoNombre, telefono: nuevoTelefono, responsableId: Number(nuevoResponsableId), hora: null, registrada: false };
       const docRef = await addDoc(collection(db, "vots"), nuevoVot);
       setVots((prev) => [...prev, { id: docRef.id, ...nuevoVot }]);
     }
@@ -407,9 +482,7 @@ function CooperativaScreen({
   const importarExcel = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-
     reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target.result);
@@ -428,25 +501,12 @@ function CooperativaScreen({
           const nombre = String(fila.nombre || "").trim();
           const telefono = String(fila.telefono || "").trim();
           const nombreResponsableExcel = String(fila.responsable || "").trim().toLowerCase();
-
-          const responsable = responsables.find(
-            (r) => r.nombre.trim().toLowerCase() === nombreResponsableExcel
-          );
-
+          const responsable = responsables.find((r) => r.nombre.trim().toLowerCase() === nombreResponsableExcel);
           if (!referencia || !responsable || existentes.has(referencia)) {
             errores += 1;
             continue;
           }
-
-          const nuevo = {
-            referencia,
-            nombre,
-            telefono,
-            responsableId: responsable.id,
-            hora: null,
-            registrada: false,
-          };
-
+          const nuevo = { referencia, nombre, telefono, responsableId: responsable.id, hora: null, registrada: false };
           const docRef = await addDoc(collection(db, "vots"), nuevo);
           nuevos.push({ id: docRef.id, ...nuevo });
           existentes.add(referencia);
@@ -454,22 +514,19 @@ function CooperativaScreen({
         }
 
         if (nuevos.length) setVots((prev) => [...prev, ...nuevos]);
-        setMensajeImportacion(`Importación completada. Correctos: ${importados}. Errores: ${errores}.`);
-      } catch (error) {
+        setMensajeImportacion(`Importación VOTs completada. Correctos: ${importados}. Errores: ${errores}.`);
+      } catch {
         setMensajeImportacion("Error al leer el Excel.");
       }
     };
-
     reader.readAsArrayBuffer(file);
     event.target.value = "";
   };
 
   const crearOActualizarResponsable = async () => {
     if (!nombreResponsable || !passwordResponsable) return;
-
     if (responsableEditando) {
       const actual = responsables.find((r) => r.id === responsableEditando);
-
       if (actual?.id) {
         await updateDoc(doc(db, "responsables", actual.id), {
           nombre: nombreResponsable,
@@ -477,34 +534,18 @@ function CooperativaScreen({
           password: passwordResponsable,
         });
       }
-
       setResponsables((prev) =>
         prev.map((r) =>
-          r.id === responsableEditando
-            ? {
-                ...r,
-                nombre: nombreResponsable,
-                telefono: telefonoResponsable,
-                password: passwordResponsable,
-              }
-            : r
+          r.id === responsableEditando ? { ...r, nombre: nombreResponsable, telefono: telefonoResponsable, password: passwordResponsable } : r
         )
       );
-
       setResponsableEditando(null);
     } else {
       const usuario = nombreResponsable.toLowerCase().split(" ")[0];
-      const nuevoResponsable = {
-        nombre: nombreResponsable,
-        telefono: telefonoResponsable,
-        usuario,
-        password: passwordResponsable,
-      };
-
+      const nuevoResponsable = { nombre: nombreResponsable, telefono: telefonoResponsable, usuario, password: passwordResponsable };
       const docRef = await addDoc(collection(db, "responsables"), nuevoResponsable);
       setResponsables((prev) => [...prev, { id: docRef.id, ...nuevoResponsable }]);
     }
-
     setNombreResponsable("");
     setTelefonoResponsable("");
     setPasswordResponsable("");
@@ -523,17 +564,14 @@ function CooperativaScreen({
       return;
     }
     if (!window.confirm("¿Eliminar este responsable?")) return;
-
     await deleteDoc(doc(db, "responsables", id));
     setResponsables((prev) => prev.filter((r) => r.id !== id));
   };
 
   const crearOActualizarInteractor = async () => {
     if (!nombreInteractor || !passwordInteractor) return;
-
     if (interactorEditando) {
       const actual = interactores.find((i) => i.id === interactorEditando);
-
       if (actual?.id) {
         await updateDoc(doc(db, "interactores", actual.id), {
           nombre: nombreInteractor,
@@ -541,35 +579,18 @@ function CooperativaScreen({
           password: passwordInteractor,
         });
       }
-
       setInteractores((prev) =>
         prev.map((i) =>
-          i.id === interactorEditando
-            ? {
-                ...i,
-                nombre: nombreInteractor,
-                telefono: telefonoInteractor,
-                password: passwordInteractor,
-              }
-            : i
+          i.id === interactorEditando ? { ...i, nombre: nombreInteractor, telefono: telefonoInteractor, password: passwordInteractor } : i
         )
       );
-
       setInteractorEditando(null);
     } else {
       const usuario = nombreInteractor.toLowerCase().split(" ")[0] + interactores.length;
-      const nuevoInteractor = {
-        nombre: nombreInteractor,
-        telefono: telefonoInteractor,
-        usuario,
-        password: passwordInteractor,
-        activo: true,
-      };
-
+      const nuevoInteractor = { nombre: nombreInteractor, telefono: telefonoInteractor, usuario, password: passwordInteractor, activo: true };
       const docRef = await addDoc(collection(db, "interactores"), nuevoInteractor);
       setInteractores((prev) => [...prev, { id: docRef.id, ...nuevoInteractor }]);
     }
-
     setNombreInteractor("");
     setTelefonoInteractor("");
     setPasswordInteractor("");
@@ -611,119 +632,38 @@ function CooperativaScreen({
           <Card>
             <h2 className="text-lg font-bold text-slate-950">{votEditando ? "Editar VOT" : "Alta de VOT"}</h2>
             <div className="mt-4 space-y-3">
-              <input
-                value={nuevaReferencia}
-                onChange={(e) => setNuevaReferencia(e.target.value.toUpperCase())}
-                placeholder="Referencia"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <input
-                value={nuevoNombre}
-                onChange={(e) => setNuevoNombre(e.target.value)}
-                placeholder="Nombre"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <input
-                value={nuevoTelefono}
-                onChange={(e) => setNuevoTelefono(e.target.value)}
-                placeholder="Teléfono"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <select
-                value={nuevoResponsableId}
-                onChange={(e) => setNuevoResponsableId(e.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              >
-                {responsables.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.nombre}
-                  </option>
-                ))}
+              <input value={nuevaReferencia} onChange={(e) => setNuevaReferencia(e.target.value.toUpperCase())} placeholder="Referencia" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <input value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <input value={nuevoTelefono} onChange={(e) => setNuevoTelefono(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <select value={nuevoResponsableId} onChange={(e) => setNuevoResponsableId(e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none">
+                {responsables.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
               </select>
-              <button onClick={crearOActualizarVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">
-                {votEditando ? "Guardar cambios" : "Crear VOT"}
-              </button>
+              <button onClick={crearOActualizarVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{votEditando ? "Guardar cambios" : "Crear VOT"}</button>
             </div>
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Importar Excel</h2>
-            <p className="mt-2 text-sm text-slate-500">Columnas: referencia, nombre, telefono, responsable</p>
+            <h2 className="text-lg font-bold text-slate-950">Alta / edición de responsable</h2>
             <div className="mt-4 space-y-3">
-              <input type="file" accept=".xlsx,.xls" onChange={importarExcel} className="block w-full text-sm text-slate-700" />
-              <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Ejemplo responsable: Juan Pérez</div>
-              {mensajeImportacion ? <Badge tone="gray">{mensajeImportacion}</Badge> : null}
+              <input value={nombreResponsable} onChange={(e) => setNombreResponsable(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <input value={telefonoResponsable} onChange={(e) => setTelefonoResponsable(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <input type="password" value={passwordResponsable} onChange={(e) => setPasswordResponsable(e.target.value)} placeholder="Contraseña" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <button onClick={crearOActualizarResponsable} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{responsableEditando ? "Guardar cambios" : "Crear responsable"}</button>
             </div>
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">
-              {responsableEditando ? "Editar responsable" : "Alta de responsable"}
-            </h2>
+            <h2 className="text-lg font-bold text-slate-950">Alta / edición de interactor</h2>
             <div className="mt-4 space-y-3">
-              <input
-                value={nombreResponsable}
-                onChange={(e) => setNombreResponsable(e.target.value)}
-                placeholder="Nombre"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <input
-                value={telefonoResponsable}
-                onChange={(e) => setTelefonoResponsable(e.target.value)}
-                placeholder="Teléfono"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <input
-                type="password"
-                value={passwordResponsable}
-                onChange={(e) => setPasswordResponsable(e.target.value)}
-                placeholder="Contraseña"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <button
-                onClick={crearOActualizarResponsable}
-                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
-              >
-                {responsableEditando ? "Guardar cambios" : "Crear responsable"}
-              </button>
+              <input value={nombreInteractor} onChange={(e) => setNombreInteractor(e.target.value)} placeholder="Nombre" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <input value={telefonoInteractor} onChange={(e) => setTelefonoInteractor(e.target.value)} placeholder="Teléfono" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <input type="password" value={passwordInteractor} onChange={(e) => setPasswordInteractor(e.target.value)} placeholder="Contraseña" className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none" />
+              <button onClick={crearOActualizarInteractor} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">{interactorEditando ? "Guardar cambios" : "Crear interactor"}</button>
             </div>
           </Card>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <Card>
-            <h2 className="text-lg font-bold text-slate-950">
-              {interactorEditando ? "Editar interactor" : "Alta de interactor"}
-            </h2>
-            <div className="mt-4 space-y-3">
-              <input
-                value={nombreInteractor}
-                onChange={(e) => setNombreInteractor(e.target.value)}
-                placeholder="Nombre"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <input
-                value={telefonoInteractor}
-                onChange={(e) => setTelefonoInteractor(e.target.value)}
-                placeholder="Teléfono"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <input
-                type="password"
-                value={passwordInteractor}
-                onChange={(e) => setPasswordInteractor(e.target.value)}
-                placeholder="Contraseña"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
-              <button
-                onClick={crearOActualizarInteractor}
-                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
-              >
-                {interactorEditando ? "Guardar cambios" : "Crear interactor"}
-              </button>
-            </div>
-          </Card>
-
           <Card>
             <h2 className="text-lg font-bold text-slate-950">Listado de VOTs</h2>
             <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
@@ -757,9 +697,7 @@ function CooperativaScreen({
               </table>
             </div>
           </Card>
-        </div>
 
-        <div className="grid gap-6 xl:grid-cols-2">
           <Card>
             <h2 className="text-lg font-bold text-slate-950">Listado de responsables</h2>
             <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
@@ -790,7 +728,9 @@ function CooperativaScreen({
               </table>
             </div>
           </Card>
+        </div>
 
+        <div className="grid gap-6 xl:grid-cols-2">
           <Card>
             <h2 className="text-lg font-bold text-slate-950">Listado de interactores</h2>
             <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
@@ -819,6 +759,40 @@ function CooperativaScreen({
                   ))}
                 </tbody>
               </table>
+            </div>
+          </Card>
+
+          <Card>
+            <h2 className="text-lg font-bold text-slate-950">Importación y exportación</h2>
+            <div className="mt-4 space-y-5 text-sm">
+              <div>
+                <div className="mb-2 font-semibold text-slate-900">Importar VOTs</div>
+                <input type="file" accept=".xlsx,.xls" onChange={importarExcel} className="block w-full text-sm text-slate-700" />
+                <div className="mt-2 rounded-xl bg-slate-50 p-3 text-slate-600">Columnas: referencia, nombre, telefono, responsable</div>
+              </div>
+
+              <div>
+                <div className="mb-2 font-semibold text-slate-900">Importar responsables</div>
+                <input type="file" accept=".xlsx,.xls" onChange={importarResponsables} className="block w-full text-sm text-slate-700" />
+                <div className="mt-2 rounded-xl bg-slate-50 p-3 text-slate-600">Columnas: nombre, telefono, usuario, password</div>
+              </div>
+
+              <div>
+                <div className="mb-2 font-semibold text-slate-900">Importar interactores</div>
+                <input type="file" accept=".xlsx,.xls" onChange={importarInteractores} className="block w-full text-sm text-slate-700" />
+                <div className="mt-2 rounded-xl bg-slate-50 p-3 text-slate-600">Columnas: nombre, telefono, usuario, password, activo</div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-4">
+                <div className="mb-3 font-semibold text-slate-900">Exportar listados</div>
+                <div className="flex flex-wrap gap-3">
+                  <ActionButton tone="dark" onClick={exportarVots}>Exportar VOTs</ActionButton>
+                  <ActionButton tone="dark" onClick={exportarVotsPorResponsables}>Exportar por responsables</ActionButton>
+                  <ActionButton tone="dark" onClick={exportarInteractores}>Exportar interactores</ActionButton>
+                </div>
+              </div>
+
+              {mensajeImportacion ? <Badge tone="gray">{mensajeImportacion}</Badge> : null}
             </div>
           </Card>
         </div>
@@ -869,26 +843,11 @@ export default function App() {
   }
 
   if (sesion.rol === "interactor") {
-    return (
-      <InteractorScreen
-        onLogout={() => setSesion(null)}
-        vots={vots}
-        setVots={setVots}
-        usuario={sesion.usuario}
-        interactores={interactores}
-      />
-    );
+    return <InteractorScreen onLogout={() => setSesion(null)} vots={vots} setVots={setVots} usuario={sesion.usuario} interactores={interactores} />;
   }
 
   if (sesion.rol === "responsable") {
-    return (
-      <ResponsableScreen
-        onLogout={() => setSesion(null)}
-        usuario={sesion.usuario}
-        vots={vots}
-        responsables={responsables}
-      />
-    );
+    return <ResponsableScreen onLogout={() => setSesion(null)} usuario={sesion.usuario} vots={vots} responsables={responsables} />;
   }
 
   return (
@@ -903,3 +862,14 @@ export default function App() {
     />
   );
 }
+```
+
+Resumen de lo que añade:
+- exportación por **responsables**
+- exportación de **interactores**
+- importación de **responsables**
+- importación de **interactores**
+- módulos de importación/exportación en la **parte baja**
+- pantalla de interactor con **campo y botón grandes**
+
+Si quieres, el siguiente paso te lo dejo con una tercera exportación: **VOTs por interactores/registro del día**.
