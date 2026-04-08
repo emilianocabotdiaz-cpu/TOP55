@@ -17,15 +17,24 @@ function Badge({ children, tone = "gray" }) {
     amber: "bg-amber-100 text-amber-700",
     red: "bg-rose-100 text-rose-700",
   };
+
   return (
-    <span className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium ${styles[tone]}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium ${styles[tone]}`}
+    >
       {children}
     </span>
   );
 }
 
 function Card({ children, className = "" }) {
-  return <div className={`rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm ${className}`}>{children}</div>;
+  return (
+    <div
+      className={`rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm ${className}`}
+    >
+      {children}
+    </div>
+  );
 }
 
 function StatCard({ title, value }) {
@@ -39,7 +48,10 @@ function StatCard({ title, value }) {
 
 function LogoutButton({ onLogout }) {
   return (
-    <button onClick={onLogout} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium">
+    <button
+      onClick={onLogout}
+      className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium"
+    >
       Salir
     </button>
   );
@@ -48,39 +60,50 @@ function LogoutButton({ onLogout }) {
 function ActionButton({ children, onClick, tone = "default" }) {
   const classes = {
     default: "border border-slate-200 text-slate-700",
-    danger: "border border-rose-200 text-rose-700 bg-rose-50",
+    danger: "border border-rose-200 bg-rose-50 text-rose-700",
     dark: "bg-slate-950 text-white",
   };
+
   return (
-    <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}`}>
+    <button
+      onClick={onClick}
+      className={`rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}`}
+    >
       {children}
     </button>
   );
 }
 
-function LoginScreen({ onLogin, responsables, interactores }) {
+function LoginScreen({ onLogin, responsables, mesas }) {
   const [rol, setRol] = useState("cooperativa");
   const [usuario, setUsuario] = useState("admin");
   const [password, setPassword] = useState("");
 
-  const interactoresActivos = interactores.filter((i) => i.activo);
+  const mesasActivas = mesas.filter((m) => m.activo);
 
   const entrar = () => {
     if (rol === "cooperativa") {
-      if (password === "17052026") onLogin({ rol, usuario: "admin" });
-      else alert("Contraseña incorrecta");
+      if (password === "17052026") {
+        onLogin({ rol, usuario: "admin" });
+      } else {
+        alert("Contraseña incorrecta");
+      }
       return;
     }
 
     if (rol === "responsable") {
-      const user = responsables.find((r) => r.usuario === usuario && r.password === password);
+      const user = responsables.find(
+        (r) => r.usuario === usuario && r.password === password
+      );
       if (user) onLogin({ rol, usuario });
       else alert("Credenciales incorrectas");
       return;
     }
 
-    if (rol === "interactor") {
-      const user = interactores.find((i) => i.usuario === usuario && i.password === password && i.activo);
+    if (rol === "mesa") {
+      const user = mesas.find(
+        (m) => m.usuario === usuario && m.password === password && m.activo
+      );
       if (user) onLogin({ rol, usuario });
       else alert("Credenciales incorrectas");
     }
@@ -90,33 +113,46 @@ function LoginScreen({ onLogin, responsables, interactores }) {
     <div className="min-h-screen bg-slate-100 px-5 py-8 md:px-8">
       <div className="mx-auto max-w-xl">
         <Card>
-          <h1 className="text-3xl font-bold text-slate-950">Acceso a la aplicación</h1>
-          <p className="mt-2 text-slate-600">Selecciona el perfil para entrar.</p>
+          <h1 className="text-3xl font-bold text-slate-950">
+            Acceso a la aplicación
+          </h1>
+          <p className="mt-2 text-slate-600">
+            Selecciona el perfil para entrar.
+          </p>
 
           <div className="mt-6 space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Perfil</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Perfil
+              </label>
               <select
                 value={rol}
                 onChange={(e) => {
                   const nuevoRol = e.target.value;
                   setRol(nuevoRol);
                   setPassword("");
-                  if (nuevoRol === "responsable") setUsuario(responsables[0]?.usuario || "");
-                  else if (nuevoRol === "interactor") setUsuario(interactoresActivos[0]?.usuario || "");
-                  else setUsuario("admin");
+
+                  if (nuevoRol === "responsable") {
+                    setUsuario(responsables[0]?.usuario || "");
+                  } else if (nuevoRol === "mesa") {
+                    setUsuario(mesasActivas[0]?.usuario || "");
+                  } else {
+                    setUsuario("admin");
+                  }
                 }}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
               >
                 <option value="cooperativa">Panel de control</option>
-                <option value="interactor">Interactor</option>
+                <option value="mesa">Mesa</option>
                 <option value="responsable">Responsable</option>
               </select>
             </div>
 
             {rol === "responsable" && (
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Responsable</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Responsable
+                </label>
                 <select
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
@@ -131,17 +167,19 @@ function LoginScreen({ onLogin, responsables, interactores }) {
               </div>
             )}
 
-            {rol === "interactor" && (
+            {rol === "mesa" && (
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Interactor</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Mesa
+                </label>
                 <select
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
                   className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
                 >
-                  {interactoresActivos.map((i) => (
-                    <option key={i.id} value={i.usuario}>
-                      {i.nombre}
+                  {mesasActivas.map((m) => (
+                    <option key={m.id} value={m.usuario}>
+                      {m.nombre}
                     </option>
                   ))}
                 </select>
@@ -149,7 +187,9 @@ function LoginScreen({ onLogin, responsables, interactores }) {
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Contraseña</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Contraseña
+              </label>
               <input
                 type="password"
                 value={password}
@@ -159,7 +199,10 @@ function LoginScreen({ onLogin, responsables, interactores }) {
               />
             </div>
 
-            <button onClick={entrar} className="h-12 w-full rounded-xl bg-slate-950 text-white font-semibold">
+            <button
+              onClick={entrar}
+              className="h-12 w-full rounded-xl bg-slate-950 font-semibold text-white"
+            >
               Entrar
             </button>
           </div>
@@ -169,18 +212,18 @@ function LoginScreen({ onLogin, responsables, interactores }) {
   );
 }
 
-function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
+function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
 
-  const interactorActivo = interactores.find((i) => i.usuario === usuario);
-  const votsAsignados = vots.filter((o) => o.interactorId === interactorActivo?.id);
+  const mesaActiva = mesas.find((m) => m.usuario === usuario);
+  const votsAsignados = vots.filter((o) => o.mesaId === mesaActiva?.id);
   const pendientes = votsAsignados.filter((o) => !o.registrada);
   const registrados = votsAsignados.filter((o) => o.registrada);
 
   const registrarDirecto = async (vot) => {
     if (vot.registrada) {
-      setMensaje("Ese VOT ya estaba registrado");
+      setMensaje("Este VOT ya estaba registrado");
       setTipoMensaje("amber");
       return;
     }
@@ -190,15 +233,13 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
       minute: "2-digit",
     });
 
-    if (vot.id) {
-      await updateDoc(doc(db, "vots", vot.id), { registrada: true, hora });
-    }
+    await updateDoc(doc(db, "vots", vot.id), { registrada: true, hora });
 
     setVots((prev) =>
       prev.map((o) => (o.id === vot.id ? { ...o, registrada: true, hora } : o))
     );
 
-    setMensaje(`Registrado correctamente: ${vot.referencia}`);
+    setMensaje(`Registrado correctamente: ${vot.nombre}`);
     setTipoMensaje("green");
   };
 
@@ -208,10 +249,14 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-950">Pantalla interactor</h1>
-              <p className="mt-2 text-slate-600">VOTs asignados para control.</p>
+              <h1 className="text-3xl font-bold text-slate-950">
+                Pantalla mesa
+              </h1>
+              <p className="mt-2 text-slate-600">
+                VOTs asignados para control.
+              </p>
               <p className="mt-1 text-sm text-slate-500">
-                Interactor activo: {interactorActivo?.nombre || usuario}
+                Mesa activa: {mesaActiva?.nombre || usuario}
               </p>
             </div>
             <LogoutButton onLogout={onLogout} />
@@ -226,18 +271,22 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
 
         <Card>
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-bold text-slate-950">VOTs pendientes de registrar</h2>
-            <Badge tone={tipoMensaje}>{mensaje || "Pulsa registrar para completar la entrada"}</Badge>
+            <h2 className="text-2xl font-bold text-slate-950">
+              VOTs pendientes de registrar
+            </h2>
+            <Badge tone={tipoMensaje}>
+              {mensaje || "Pulsa registrar para completar la entrada"}
+            </Badge>
           </div>
 
           <div className="mt-5 overflow-auto rounded-xl border border-slate-200">
             <table className="min-w-full text-sm">
               <thead className="bg-slate-100 text-slate-800">
                 <tr>
-                  <th className="px-4 py-3 text-left">Referencia</th>
                   <th className="px-4 py-3 text-left">Nombre</th>
                   <th className="px-4 py-3 text-left">Registrar</th>
                   <th className="px-4 py-3 text-left">Teléfono</th>
+                  <th className="px-4 py-3 text-left">Calle</th>
                   <th className="px-4 py-3 text-left">Hora</th>
                   <th className="px-4 py-3 text-left">Estado</th>
                 </tr>
@@ -246,14 +295,13 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
                 {pendientes.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-4 py-6 text-center text-slate-500">
-                      No quedan VOTs pendientes para este interactor.
+                      No quedan VOTs pendientes para esta mesa.
                     </td>
                   </tr>
                 ) : (
                   pendientes.map((o) => (
                     <tr key={o.id} className="border-t border-slate-200">
-                      <td className="px-4 py-3 font-semibold">{o.referencia}</td>
-                      <td className="px-4 py-3">{o.nombre}</td>
+                      <td className="px-4 py-3 font-semibold">{o.nombre}</td>
                       <td className="px-4 py-3">
                         <button
                           onClick={() => registrarDirecto(o)}
@@ -263,6 +311,7 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
                         </button>
                       </td>
                       <td className="px-4 py-3">{o.telefono || "-"}</td>
+                      <td className="px-4 py-3">{o.calle || "-"}</td>
                       <td className="px-4 py-3">{o.hora || "-"}</td>
                       <td className="px-4 py-3">
                         <Badge tone="amber">Pendiente</Badge>
@@ -279,7 +328,7 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
   );
 }
 
-function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
+function ResponsableScreen({ onLogout, usuario, vots, responsables, mesas }) {
   const responsable = responsables.find((r) => r.usuario === usuario);
   const votsResp = vots.filter((o) => o.responsableId === responsable?.id);
   const llegadas = votsResp.filter((o) => o.registrada).length;
@@ -310,7 +359,9 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-950">Pantalla responsable</h1>
+              <h1 className="text-3xl font-bold text-slate-950">
+                Pantalla responsable
+              </h1>
               <p className="mt-2 text-slate-600">Solo ve sus VOTs.</p>
             </div>
             <LogoutButton onLogout={onLogout} />
@@ -329,34 +380,44 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-100 text-slate-800">
                 <tr>
-                  <th className="px-4 py-3 text-left">Referencia</th>
                   <th className="px-4 py-3 text-left">Nombre</th>
                   <th className="px-4 py-3 text-left">Teléfono</th>
+                  <th className="px-4 py-3 text-left">Calle</th>
+                  <th className="px-4 py-3 text-left">Mesa</th>
                   <th className="px-4 py-3 text-left">Hora</th>
                   <th className="px-4 py-3 text-left">Estado</th>
                   <th className="px-4 py-3 text-left">WhatsApp</th>
                 </tr>
               </thead>
               <tbody>
-                {votsResp.map((o) => (
-                  <tr key={o.id} className="border-t border-slate-200">
-                    <td className="px-4 py-3 font-semibold">{o.referencia}</td>
-                    <td className="px-4 py-3">{o.nombre}</td>
-                    <td className="px-4 py-3">{o.telefono}</td>
-                    <td className="px-4 py-3">{o.hora || "-"}</td>
-                    <td className="px-4 py-3">
-                      {o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => abrirWhatsApp(o.telefono, o.nombre)}
-                        className="flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white"
-                      >
-                        <span>📱</span> WhatsApp
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {votsResp.map((o) => {
+                  const mesa = mesas.find((m) => m.id === o.mesaId);
+
+                  return (
+                    <tr key={o.id} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold">{o.nombre}</td>
+                      <td className="px-4 py-3">{o.telefono || "-"}</td>
+                      <td className="px-4 py-3">{o.calle || "-"}</td>
+                      <td className="px-4 py-3">{mesa?.nombre || "-"}</td>
+                      <td className="px-4 py-3">{o.hora || "-"}</td>
+                      <td className="px-4 py-3">
+                        {o.registrada ? (
+                          <Badge tone="green">Ha entrado</Badge>
+                        ) : (
+                          <Badge tone="amber">Falta</Badge>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => abrirWhatsApp(o.telefono, o.nombre)}
+                          className="flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white"
+                        >
+                          <span>📱</span> WhatsApp
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -372,27 +433,27 @@ function CooperativaScreen({
   setVots,
   responsables,
   setResponsables,
-  interactores,
-  setInteractores,
+  mesas,
+  setMesas,
 }) {
-  const [nuevaReferencia, setNuevaReferencia] = useState("");
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [nuevoTelefono, setNuevoTelefono] = useState("");
+  const [nuevaCalle, setNuevaCalle] = useState("");
   const [nuevoResponsableId, setNuevoResponsableId] = useState("");
-  const [nuevoInteractorId, setNuevoInteractorId] = useState("");
+  const [nuevaMesaId, setNuevaMesaId] = useState("");
   const [mensajeImportacion, setMensajeImportacion] = useState("");
 
   const [nombreResponsable, setNombreResponsable] = useState("");
   const [telefonoResponsable, setTelefonoResponsable] = useState("");
   const [passwordResponsable, setPasswordResponsable] = useState("");
 
-  const [nombreInteractor, setNombreInteractor] = useState("");
-  const [telefonoInteractor, setTelefonoInteractor] = useState("");
-  const [passwordInteractor, setPasswordInteractor] = useState("");
+  const [nombreMesa, setNombreMesa] = useState("");
+  const [telefonoMesa, setTelefonoMesa] = useState("");
+  const [passwordMesa, setPasswordMesa] = useState("");
 
   const [votEditando, setVotEditando] = useState(null);
   const [responsableEditando, setResponsableEditando] = useState(null);
-  const [interactorEditando, setInteractorEditando] = useState(null);
+  const [mesaEditando, setMesaEditando] = useState(null);
 
   const total = vots.length;
   const llegadas = vots.filter((o) => o.registrada).length;
@@ -407,16 +468,16 @@ function CooperativaScreen({
   const exportarVots = () => {
     const datos = vots.map((v) => {
       const responsable = responsables.find((r) => r.id === v.responsableId);
-      const interactor = interactores.find((i) => i.id === v.interactorId);
+      const mesa = mesas.find((m) => m.id === v.mesaId);
 
       return {
-        referencia: v.referencia,
-        nombre: v.nombre,
-        telefono: v.telefono,
+        nombre: v.nombre || "",
+        telefono: v.telefono || "",
+        calle: v.calle || "",
         responsable: responsable?.nombre || "",
         usuario_responsable: responsable?.usuario || "",
-        interactor: interactor?.nombre || "",
-        usuario_interactor: interactor?.usuario || "",
+        mesa: mesa?.nombre || "",
+        usuario_mesa: mesa?.usuario || "",
         hora: v.hora || "",
         registrada: v.registrada ? "sí" : "no",
       };
@@ -429,19 +490,18 @@ function CooperativaScreen({
   };
 
   const crearOActualizarVot = async () => {
-    if (!nuevaReferencia || !nuevoResponsableId) return;
-    const ref = nuevaReferencia.toUpperCase();
+    if (!nuevoNombre || !nuevoResponsableId) return;
 
     if (votEditando) {
       const votActual = vots.find((v) => v.id === votEditando);
 
       if (votActual?.id) {
         await updateDoc(doc(db, "vots", votActual.id), {
-          referencia: ref,
           nombre: nuevoNombre,
           telefono: nuevoTelefono,
+          calle: nuevaCalle,
           responsableId: nuevoResponsableId,
-          interactorId: nuevoInteractorId || "",
+          mesaId: nuevaMesaId || "",
         });
       }
 
@@ -450,28 +510,24 @@ function CooperativaScreen({
           v.id === votEditando
             ? {
                 ...v,
-                referencia: ref,
                 nombre: nuevoNombre,
                 telefono: nuevoTelefono,
+                calle: nuevaCalle,
                 responsableId: nuevoResponsableId,
-                interactorId: nuevoInteractorId || "",
+                mesaId: nuevaMesaId || "",
               }
             : v
         )
       );
+
       setVotEditando(null);
     } else {
-      if (vots.some((o) => o.referencia === ref)) {
-        alert("La referencia ya existe");
-        return;
-      }
-
       const nuevoVot = {
-        referencia: ref,
         nombre: nuevoNombre,
         telefono: nuevoTelefono,
+        calle: nuevaCalle,
         responsableId: nuevoResponsableId,
-        interactorId: nuevoInteractorId || "",
+        mesaId: nuevaMesaId || "",
         hora: null,
         registrada: false,
       };
@@ -480,10 +536,11 @@ function CooperativaScreen({
       setVots((prev) => [...prev, { id: docRef.id, ...nuevoVot }]);
     }
 
-    setNuevaReferencia("");
     setNuevoNombre("");
     setNuevoTelefono("");
-    setNuevoInteractorId("");
+    setNuevaCalle("");
+    setNuevaMesaId("");
+
     if (responsables.length > 0) {
       setNuevoResponsableId(responsables[0].id);
     }
@@ -491,11 +548,11 @@ function CooperativaScreen({
 
   const editarVot = (v) => {
     setVotEditando(v.id);
-    setNuevaReferencia(v.referencia);
-    setNuevoNombre(v.nombre);
-    setNuevoTelefono(v.telefono);
+    setNuevoNombre(v.nombre || "");
+    setNuevoTelefono(v.telefono || "");
+    setNuevaCalle(v.calle || "");
     setNuevoResponsableId(v.responsableId || "");
-    setNuevoInteractorId(v.interactorId || "");
+    setNuevaMesaId(v.mesaId || "");
   };
 
   const eliminarVot = async (id) => {
@@ -520,42 +577,54 @@ function CooperativaScreen({
 
         let importados = 0;
         let errores = 0;
-        const existentes = new Set(vots.map((v) => v.referencia));
         const nuevos = [];
 
         for (const fila of filas) {
-          const referencia = String(fila.referencia || "").trim().toUpperCase();
           const nombre = String(fila.nombre || "").trim();
           const telefono = String(fila.telefono || "").trim();
-          const nombreResponsableExcel = String(fila.responsable || "").trim().toLowerCase();
+          const calle = String(fila.calle || "").trim();
+          const nombreResponsableExcel = String(fila.responsable || "")
+            .trim()
+            .toLowerCase();
+          const nombreMesaExcel = String(fila.mesa || "")
+            .trim()
+            .toLowerCase();
 
           const responsable = responsables.find(
             (r) => r.nombre.trim().toLowerCase() === nombreResponsableExcel
           );
 
-          if (!referencia || !responsable || existentes.has(referencia)) {
+          const mesa = mesas.find(
+            (m) => m.nombre.trim().toLowerCase() === nombreMesaExcel
+          );
+
+          if (!nombre || !responsable) {
             errores += 1;
             continue;
           }
 
           const nuevo = {
-            referencia,
             nombre,
             telefono,
+            calle,
             responsableId: responsable.id,
-            interactorId: "",
+            mesaId: mesa?.id || "",
             hora: null,
             registrada: false,
           };
 
           const docRef = await addDoc(collection(db, "vots"), nuevo);
           nuevos.push({ id: docRef.id, ...nuevo });
-          existentes.add(referencia);
           importados += 1;
         }
 
-        if (nuevos.length) setVots((prev) => [...prev, ...nuevos]);
-        setMensajeImportacion(`Importación completada. Correctos: ${importados}. Errores: ${errores}.`);
+        if (nuevos.length) {
+          setVots((prev) => [...prev, ...nuevos]);
+        }
+
+        setMensajeImportacion(
+          `Importación completada. Correctos: ${importados}. Errores: ${errores}.`
+        );
       } catch (error) {
         setMensajeImportacion("Error al leer el Excel.");
       }
@@ -613,9 +682,9 @@ function CooperativaScreen({
 
   const editarResponsable = (r) => {
     setResponsableEditando(r.id);
-    setNombreResponsable(r.nombre);
-    setTelefonoResponsable(r.telefono);
-    setPasswordResponsable(r.password);
+    setNombreResponsable(r.nombre || "");
+    setTelefonoResponsable(r.telefono || "");
+    setPasswordResponsable(r.password || "");
   };
 
   const eliminarResponsable = async (id) => {
@@ -623,76 +692,84 @@ function CooperativaScreen({
       alert("No puedes eliminar un responsable con VOTs asignados.");
       return;
     }
-    if (!window.confirm("¿Eliminar este responsable?")) return;
 
+    if (!window.confirm("¿Eliminar este responsable?")) return;
     await deleteDoc(doc(db, "responsables", id));
     setResponsables((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const crearOActualizarInteractor = async () => {
-    if (!nombreInteractor || !passwordInteractor) return;
+  const crearOActualizarMesa = async () => {
+    if (!nombreMesa || !passwordMesa) return;
 
-    if (interactorEditando) {
-      const actual = interactores.find((i) => i.id === interactorEditando);
+    if (mesaEditando) {
+      const actual = mesas.find((m) => m.id === mesaEditando);
 
       if (actual?.id) {
-        await updateDoc(doc(db, "interactores", actual.id), {
-          nombre: nombreInteractor,
-          telefono: telefonoInteractor,
-          password: passwordInteractor,
+        const collectionName = actual._collection || "mesas";
+        await updateDoc(doc(db, collectionName, actual.id), {
+          nombre: nombreMesa,
+          telefono: telefonoMesa,
+          password: passwordMesa,
         });
       }
 
-      setInteractores((prev) =>
-        prev.map((i) =>
-          i.id === interactorEditando
+      setMesas((prev) =>
+        prev.map((m) =>
+          m.id === mesaEditando
             ? {
-                ...i,
-                nombre: nombreInteractor,
-                telefono: telefonoInteractor,
-                password: passwordInteractor,
+                ...m,
+                nombre: nombreMesa,
+                telefono: telefonoMesa,
+                password: passwordMesa,
               }
-            : i
+            : m
         )
       );
 
-      setInteractorEditando(null);
+      setMesaEditando(null);
     } else {
-      const usuario = nombreInteractor.toLowerCase().split(" ")[0] + interactores.length;
-      const nuevoInteractor = {
-        nombre: nombreInteractor,
-        telefono: telefonoInteractor,
+      const usuario = nombreMesa.toLowerCase().split(" ")[0] + mesas.length;
+      const nuevaMesa = {
+        nombre: nombreMesa,
+        telefono: telefonoMesa,
         usuario,
-        password: passwordInteractor,
+        password: passwordMesa,
         activo: true,
       };
 
-      const docRef = await addDoc(collection(db, "interactores"), nuevoInteractor);
-      setInteractores((prev) => [...prev, { id: docRef.id, ...nuevoInteractor }]);
+      const docRef = await addDoc(collection(db, "mesas"), nuevaMesa);
+      setMesas((prev) => [
+        ...prev,
+        { id: docRef.id, ...nuevaMesa, _collection: "mesas" },
+      ]);
     }
 
-    setNombreInteractor("");
-    setTelefonoInteractor("");
-    setPasswordInteractor("");
+    setNombreMesa("");
+    setTelefonoMesa("");
+    setPasswordMesa("");
   };
 
-  const editarInteractor = (i) => {
-    setInteractorEditando(i.id);
-    setNombreInteractor(i.nombre);
-    setTelefonoInteractor(i.telefono);
-    setPasswordInteractor(i.password);
+  const editarMesa = (m) => {
+    setMesaEditando(m.id);
+    setNombreMesa(m.nombre || "");
+    setTelefonoMesa(m.telefono || "");
+    setPasswordMesa(m.password || "");
   };
 
-  const eliminarInteractor = async (id) => {
-    const tieneVots = vots.some((v) => v.interactorId === id);
+  const eliminarMesa = async (id) => {
+    const tieneVots = vots.some((v) => v.mesaId === id);
     if (tieneVots) {
-      alert("No puedes eliminar un interactor con VOTs asignados.");
+      alert("No puedes eliminar una mesa con VOTs asignados.");
       return;
     }
 
-    if (!window.confirm("¿Eliminar este interactor?")) return;
-    await deleteDoc(doc(db, "interactores", id));
-    setInteractores((prev) => prev.filter((i) => i.id !== id));
+    const mesa = mesas.find((m) => m.id === id);
+    const collectionName = mesa?._collection || "mesas";
+
+    if (!window.confirm("¿Eliminar esta mesa?")) return;
+
+    await deleteDoc(doc(db, collectionName, id));
+    setMesas((prev) => prev.filter((m) => m.id !== id));
   };
 
   return (
@@ -701,7 +778,9 @@ function CooperativaScreen({
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-950">Panel de control</h1>
+              <h1 className="text-3xl font-bold text-slate-950">
+                Panel de control
+              </h1>
               <p className="mt-2 text-slate-600">Gestión completa.</p>
             </div>
             <LogoutButton onLogout={onLogout} />
@@ -716,14 +795,10 @@ function CooperativaScreen({
 
         <div className="grid gap-6 xl:grid-cols-3">
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">{votEditando ? "Editar VOT" : "Alta de VOT"}</h2>
+            <h2 className="text-lg font-bold text-slate-950">
+              {votEditando ? "Editar VOT" : "Alta de VOT"}
+            </h2>
             <div className="mt-4 space-y-3">
-              <input
-                value={nuevaReferencia}
-                onChange={(e) => setNuevaReferencia(e.target.value.toUpperCase())}
-                placeholder="Referencia"
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
-              />
               <input
                 value={nuevoNombre}
                 onChange={(e) => setNuevoNombre(e.target.value)}
@@ -734,6 +809,12 @@ function CooperativaScreen({
                 value={nuevoTelefono}
                 onChange={(e) => setNuevoTelefono(e.target.value)}
                 placeholder="Teléfono"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
+                value={nuevaCalle}
+                onChange={(e) => setNuevaCalle(e.target.value)}
+                placeholder="Calle"
                 className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
               />
               <select
@@ -748,33 +829,52 @@ function CooperativaScreen({
                 ))}
               </select>
               <select
-                value={nuevoInteractorId}
-                onChange={(e) => setNuevoInteractorId(e.target.value)}
+                value={nuevaMesaId}
+                onChange={(e) => setNuevaMesaId(e.target.value)}
                 className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
               >
-                <option value="">Sin interactor asignado</option>
-                {interactores
-                  .filter((i) => i.activo)
-                  .map((i) => (
-                    <option key={i.id} value={i.id}>
-                      {i.nombre}
+                <option value="">Sin mesa asignada</option>
+                {mesas
+                  .filter((m) => m.activo)
+                  .map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.nombre}
                     </option>
                   ))}
               </select>
-              <button onClick={crearOActualizarVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">
+
+              <button
+                onClick={crearOActualizarVot}
+                className="h-11 w-full rounded-xl bg-slate-950 font-semibold text-white"
+              >
                 {votEditando ? "Guardar cambios" : "Crear VOT"}
               </button>
             </div>
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Importar / Exportar VOTs</h2>
-            <p className="mt-2 text-sm text-slate-500">Columnas: referencia, nombre, telefono, responsable</p>
+            <h2 className="text-lg font-bold text-slate-950">
+              Importar / Exportar VOTs
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Columnas: nombre, telefono, calle, responsable, mesa
+            </p>
             <div className="mt-4 space-y-3">
-              <input type="file" accept=".xlsx,.xls" onChange={importarExcel} className="block w-full text-sm text-slate-700" />
-              <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Ejemplo responsable: Juan Pérez</div>
-              <ActionButton tone="dark" onClick={exportarVots}>Exportar VOTs</ActionButton>
-              {mensajeImportacion ? <Badge tone="gray">{mensajeImportacion}</Badge> : null}
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={importarExcel}
+                className="block w-full text-sm text-slate-700"
+              />
+              <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+                La columna mesa es opcional. Responsable es obligatoria.
+              </div>
+              <ActionButton tone="dark" onClick={exportarVots}>
+                Exportar VOTs
+              </ActionButton>
+              {mensajeImportacion ? (
+                <Badge tone="gray">{mensajeImportacion}</Badge>
+              ) : null}
             </div>
           </Card>
 
@@ -804,7 +904,7 @@ function CooperativaScreen({
               />
               <button
                 onClick={crearOActualizarResponsable}
-                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
+                className="h-11 w-full rounded-xl bg-slate-950 font-semibold text-white"
               >
                 {responsableEditando ? "Guardar cambios" : "Crear responsable"}
               </button>
@@ -815,33 +915,33 @@ function CooperativaScreen({
         <div className="grid gap-6 xl:grid-cols-2">
           <Card>
             <h2 className="text-lg font-bold text-slate-950">
-              {interactorEditando ? "Editar interactor" : "Alta de interactor"}
+              {mesaEditando ? "Editar mesa" : "Alta de mesa"}
             </h2>
             <div className="mt-4 space-y-3">
               <input
-                value={nombreInteractor}
-                onChange={(e) => setNombreInteractor(e.target.value)}
+                value={nombreMesa}
+                onChange={(e) => setNombreMesa(e.target.value)}
                 placeholder="Nombre"
                 className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
               />
               <input
-                value={telefonoInteractor}
-                onChange={(e) => setTelefonoInteractor(e.target.value)}
+                value={telefonoMesa}
+                onChange={(e) => setTelefonoMesa(e.target.value)}
                 placeholder="Teléfono"
                 className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
               />
               <input
                 type="password"
-                value={passwordInteractor}
-                onChange={(e) => setPasswordInteractor(e.target.value)}
+                value={passwordMesa}
+                onChange={(e) => setPasswordMesa(e.target.value)}
                 placeholder="Contraseña"
                 className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
               />
               <button
-                onClick={crearOActualizarInteractor}
-                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
+                onClick={crearOActualizarMesa}
+                className="h-11 w-full rounded-xl bg-slate-950 font-semibold text-white"
               >
-                {interactorEditando ? "Guardar cambios" : "Crear interactor"}
+                {mesaEditando ? "Guardar cambios" : "Crear mesa"}
               </button>
             </div>
           </Card>
@@ -852,28 +952,39 @@ function CooperativaScreen({
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-100 text-slate-800">
                   <tr>
-                    <th className="px-4 py-3 text-left">Referencia</th>
                     <th className="px-4 py-3 text-left">Nombre</th>
+                    <th className="px-4 py-3 text-left">Teléfono</th>
+                    <th className="px-4 py-3 text-left">Calle</th>
                     <th className="px-4 py-3 text-left">Responsable</th>
-                    <th className="px-4 py-3 text-left">Interactor</th>
+                    <th className="px-4 py-3 text-left">Mesa</th>
                     <th className="px-4 py-3 text-left">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {vots.map((o) => {
-                    const responsable = responsables.find((r) => r.id === o.responsableId);
-                    const interactor = interactores.find((i) => i.id === o.interactorId);
+                    const responsable = responsables.find(
+                      (r) => r.id === o.responsableId
+                    );
+                    const mesa = mesas.find((m) => m.id === o.mesaId);
 
                     return (
                       <tr key={o.id} className="border-t border-slate-200">
-                        <td className="px-4 py-3 font-semibold">{o.referencia}</td>
-                        <td className="px-4 py-3">{o.nombre}</td>
+                        <td className="px-4 py-3 font-semibold">{o.nombre}</td>
+                        <td className="px-4 py-3">{o.telefono || "-"}</td>
+                        <td className="px-4 py-3">{o.calle || "-"}</td>
                         <td className="px-4 py-3">{responsable?.nombre || "-"}</td>
-                        <td className="px-4 py-3">{interactor?.nombre || "-"}</td>
+                        <td className="px-4 py-3">{mesa?.nombre || "-"}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
-                            <ActionButton onClick={() => editarVot(o)}>Editar</ActionButton>
-                            <ActionButton tone="danger" onClick={() => eliminarVot(o.id)}>Eliminar</ActionButton>
+                            <ActionButton onClick={() => editarVot(o)}>
+                              Editar
+                            </ActionButton>
+                            <ActionButton
+                              tone="danger"
+                              onClick={() => eliminarVot(o.id)}
+                            >
+                              Eliminar
+                            </ActionButton>
                           </div>
                         </td>
                       </tr>
@@ -887,7 +998,9 @@ function CooperativaScreen({
 
         <div className="grid gap-6 xl:grid-cols-2">
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Listado de responsables</h2>
+            <h2 className="text-lg font-bold text-slate-950">
+              Listado de responsables
+            </h2>
             <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-100 text-slate-800">
@@ -902,12 +1015,19 @@ function CooperativaScreen({
                   {responsables.map((r) => (
                     <tr key={r.id} className="border-t border-slate-200">
                       <td className="px-4 py-3 font-semibold">{r.nombre}</td>
-                      <td className="px-4 py-3">{r.telefono}</td>
+                      <td className="px-4 py-3">{r.telefono || "-"}</td>
                       <td className="px-4 py-3">{r.usuario}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <ActionButton onClick={() => editarResponsable(r)}>Editar</ActionButton>
-                          <ActionButton tone="danger" onClick={() => eliminarResponsable(r.id)}>Eliminar</ActionButton>
+                          <ActionButton onClick={() => editarResponsable(r)}>
+                            Editar
+                          </ActionButton>
+                          <ActionButton
+                            tone="danger"
+                            onClick={() => eliminarResponsable(r.id)}
+                          >
+                            Eliminar
+                          </ActionButton>
                         </div>
                       </td>
                     </tr>
@@ -918,7 +1038,7 @@ function CooperativaScreen({
           </Card>
 
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">Listado de interactores</h2>
+            <h2 className="text-lg font-bold text-slate-950">Listado de mesas</h2>
             <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-100 text-slate-800">
@@ -930,15 +1050,22 @@ function CooperativaScreen({
                   </tr>
                 </thead>
                 <tbody>
-                  {interactores.map((i) => (
-                    <tr key={i.id} className="border-t border-slate-200">
-                      <td className="px-4 py-3 font-semibold">{i.nombre}</td>
-                      <td className="px-4 py-3">{i.telefono}</td>
-                      <td className="px-4 py-3">{i.usuario}</td>
+                  {mesas.map((m) => (
+                    <tr key={m.id} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold">{m.nombre}</td>
+                      <td className="px-4 py-3">{m.telefono || "-"}</td>
+                      <td className="px-4 py-3">{m.usuario}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <ActionButton onClick={() => editarInteractor(i)}>Editar</ActionButton>
-                          <ActionButton tone="danger" onClick={() => eliminarInteractor(i.id)}>Eliminar</ActionButton>
+                          <ActionButton onClick={() => editarMesa(m)}>
+                            Editar
+                          </ActionButton>
+                          <ActionButton
+                            tone="danger"
+                            onClick={() => eliminarMesa(m.id)}
+                          >
+                            Eliminar
+                          </ActionButton>
                         </div>
                       </td>
                     </tr>
@@ -957,29 +1084,51 @@ export default function App() {
   const [sesion, setSesion] = useState(null);
   const [vots, setVots] = useState([]);
   const [responsables, setResponsables] = useState([]);
-  const [interactores, setInteractores] = useState([]);
+  const [mesas, setMesas] = useState([]);
   const [cargadoNube, setCargadoNube] = useState(false);
 
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const [snapVots, snapResponsables, snapInteractores] = await Promise.all([
-          getDocs(collection(db, "vots")),
-          getDocs(collection(db, "responsables")),
-          getDocs(collection(db, "interactores")),
-        ]);
+        const [snapVots, snapResponsables, snapMesas, snapInteractoresLegacy] =
+          await Promise.all([
+            getDocs(collection(db, "vots")),
+            getDocs(collection(db, "responsables")),
+            getDocs(collection(db, "mesas")),
+            getDocs(collection(db, "interactores")),
+          ]);
 
         const datosVots = snapVots.docs.map((d) => ({
           id: d.id,
           ...d.data(),
-          interactorId: d.data().interactorId || "",
+          nombre: d.data().nombre || "",
+          telefono: d.data().telefono || "",
+          calle: d.data().calle || "",
+          mesaId: d.data().mesaId || d.data().interactorId || "",
         }));
-        const datosResponsables = snapResponsables.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const datosInteractores = snapInteractores.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        const datosResponsables = snapResponsables.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+
+        const mesasNuevas = snapMesas.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          _collection: "mesas",
+        }));
+
+        const mesasLegacy = snapInteractoresLegacy.docs
+          .filter((d) => !mesasNuevas.some((m) => m.id === d.id))
+          .map((d) => ({
+            id: d.id,
+            ...d.data(),
+            _collection: "interactores",
+          }));
 
         setVots(datosVots);
         setResponsables(datosResponsables);
-        setInteractores(datosInteractores);
+        setMesas([...mesasNuevas, ...mesasLegacy]);
       } catch (error) {
         console.error("Error cargando datos desde Firebase", error);
       } finally {
@@ -991,21 +1140,31 @@ export default function App() {
   }, []);
 
   if (!cargadoNube) {
-    return <div className="min-h-screen bg-slate-100 p-8 text-slate-700">Cargando datos...</div>;
+    return (
+      <div className="min-h-screen bg-slate-100 p-8 text-slate-700">
+        Cargando datos...
+      </div>
+    );
   }
 
   if (!sesion) {
-    return <LoginScreen onLogin={setSesion} responsables={responsables} interactores={interactores} />;
+    return (
+      <LoginScreen
+        onLogin={setSesion}
+        responsables={responsables}
+        mesas={mesas}
+      />
+    );
   }
 
-  if (sesion.rol === "interactor") {
+  if (sesion.rol === "mesa") {
     return (
-      <InteractorScreen
+      <MesaScreen
         onLogout={() => setSesion(null)}
         vots={vots}
         setVots={setVots}
         usuario={sesion.usuario}
-        interactores={interactores}
+        mesas={mesas}
       />
     );
   }
@@ -1017,6 +1176,7 @@ export default function App() {
         usuario={sesion.usuario}
         vots={vots}
         responsables={responsables}
+        mesas={mesas}
       />
     );
   }
@@ -1028,8 +1188,8 @@ export default function App() {
       setVots={setVots}
       responsables={responsables}
       setResponsables={setResponsables}
-      interactores={interactores}
-      setInteractores={setInteractores}
+      mesas={mesas}
+      setMesas={setMesas}
     />
   );
 }
