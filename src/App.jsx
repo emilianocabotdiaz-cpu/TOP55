@@ -598,7 +598,9 @@ function CooperativaScreen({
           const calle = String(fila.calle || "").trim();
 
           const nombreResponsableExcel = normalizarTexto(fila.responsable);
-          const nombreMesaOriginal = String(fila.mesa || "").replace(/\u00A0/g, " ").trim();
+          const nombreMesaOriginal = String(fila.mesa || "")
+            .replace(/\u00A0/g, " ")
+            .trim();
           const nombreMesaExcel = normalizarTexto(fila.mesa);
 
           const responsable = responsables.find(
@@ -986,9 +988,9 @@ function CooperativaScreen({
 
           <Card>
             <h2 className="text-lg font-bold text-slate-950">Listado de VOTs</h2>
-            <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
+            <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-slate-800">
+                <thead className="bg-slate-100 text-slate-800 sticky top-0">
                   <tr>
                     <th className="px-4 py-3 text-left">Nombre</th>
                     <th className="px-4 py-3 text-left">Teléfono</th>
@@ -1039,9 +1041,9 @@ function CooperativaScreen({
             <h2 className="text-lg font-bold text-slate-950">
               Listado de responsables
             </h2>
-            <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
+            <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-slate-800">
+                <thead className="bg-slate-100 text-slate-800 sticky top-0">
                   <tr>
                     <th className="px-4 py-3 text-left">Nombre</th>
                     <th className="px-4 py-3 text-left">Teléfono</th>
@@ -1077,9 +1079,9 @@ function CooperativaScreen({
 
           <Card>
             <h2 className="text-lg font-bold text-slate-950">Listado de mesas</h2>
-            <div className="mt-4 overflow-auto rounded-xl border border-slate-200">
+            <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-slate-800">
+                <thead className="bg-slate-100 text-slate-800 sticky top-0">
                   <tr>
                     <th className="px-4 py-3 text-left">Nombre</th>
                     <th className="px-4 py-3 text-left">Teléfono</th>
