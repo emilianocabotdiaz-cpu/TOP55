@@ -467,11 +467,12 @@ function CooperativaScreen({
 
   const normalizarTexto = (texto) => {
     return String(texto || "")
+      .replace(/\u00A0/g, " ")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
-      .replace(/\s+/g, " ")
       .replace(/-/g, "")
+      .replace(/\s+/g, "")
       .trim();
   };
 
@@ -587,7 +588,9 @@ function CooperativaScreen({
 
         let importados = 0;
         let errores = 0;
+        let mesasCreadas = 0;
         const nuevos = [];
+        const mesasActualizadas = [...mesas];
 
         for (const fila of filas) {
           const nombre = String(fila.nombre || "").trim();
@@ -595,20 +598,41 @@ function CooperativaScreen({
           const calle = String(fila.calle || "").trim();
 
           const nombreResponsableExcel = normalizarTexto(fila.responsable);
+          const nombreMesaOriginal = String(fila.mesa || "").replace(/\u00A0/g, " ").trim();
           const nombreMesaExcel = normalizarTexto(fila.mesa);
 
           const responsable = responsables.find(
             (r) => normalizarTexto(r.nombre) === nombreResponsableExcel
           );
 
-          const mesa = mesas.find(
+          let mesa = mesasActualizadas.find(
             (m) =>
               normalizarTexto(m.nombre) === nombreMesaExcel ||
               normalizarTexto(m.usuario) === nombreMesaExcel
           );
 
+          if (!mesa && nombreMesaOriginal) {
+            const usuarioGenerado = `mesa${mesasActualizadas.length + 1}`;
+            const nuevaMesa = {
+              nombre: nombreMesaOriginal,
+              telefono: "",
+              usuario: usuarioGenerado,
+              password: "1234",
+              activo: true,
+            };
+
+            const docRefMesa = await addDoc(collection(db, "mesas"), nuevaMesa);
+            mesa = {
+              id: docRefMesa.id,
+              ...nuevaMesa,
+              _collection: "mesas",
+            };
+            mesasActualizadas.push(mesa);
+            mesasCreadas += 1;
+          }
+
           if (!nombre || !responsable) {
-            errores++;
+            errores += 1;
             continue;
           }
 
@@ -624,7 +648,11 @@ function CooperativaScreen({
 
           const docRef = await addDoc(collection(db, "vots"), nuevo);
           nuevos.push({ id: docRef.id, ...nuevo });
-          importados++;
+          importados += 1;
+        }
+
+        if (mesasActualizadas.length !== mesas.length) {
+          setMesas(mesasActualizadas);
         }
 
         if (nuevos.length) {
@@ -632,7 +660,7 @@ function CooperativaScreen({
         }
 
         setMensajeImportacion(
-          `Importación completada. Correctos: ${importados}. Errores: ${errores}.`
+          `Importación completada. Correctos: ${importados}. Errores: ${errores}. Mesas creadas: ${mesasCreadas}.`
         );
       } catch (error) {
         console.error(error);
@@ -738,7 +766,7 @@ function CooperativaScreen({
 
       setMesaEditando(null);
     } else {
-      const usuario = nombreMesa.toLowerCase().split(" ")[0] + mesas.length;
+      const usuario = `mesa${mesas.length + 1}`;
       const nuevaMesa = {
         nombre: nombreMesa,
         telefono: telefonoMesa,
@@ -877,7 +905,7 @@ function CooperativaScreen({
                 className="block w-full text-sm text-slate-700"
               />
               <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
-                La columna mesa es opcional. Responsable es obligatoria.
+                La columna mesa es opcional. Si no existe, se crea automáticamente.
               </div>
               <ActionButton tone="dark" onClick={exportarVots}>
                 Exportar VOTs
