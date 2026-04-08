@@ -465,6 +465,16 @@ function CooperativaScreen({
     }
   }, [responsables, nuevoResponsableId]);
 
+  const normalizarTexto = (texto) => {
+    return String(texto || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .replace(/-/g, "")
+      .trim();
+  };
+
   const exportarVots = () => {
     const datos = vots.map((v) => {
       const responsable = responsables.find((r) => r.id === v.responsableId);
@@ -583,23 +593,22 @@ function CooperativaScreen({
           const nombre = String(fila.nombre || "").trim();
           const telefono = String(fila.telefono || "").trim();
           const calle = String(fila.calle || "").trim();
-          const nombreResponsableExcel = String(fila.responsable || "")
-            .trim()
-            .toLowerCase();
-          const nombreMesaExcel = String(fila.mesa || "")
-            .trim()
-            .toLowerCase();
+
+          const nombreResponsableExcel = normalizarTexto(fila.responsable);
+          const nombreMesaExcel = normalizarTexto(fila.mesa);
 
           const responsable = responsables.find(
-            (r) => r.nombre.trim().toLowerCase() === nombreResponsableExcel
+            (r) => normalizarTexto(r.nombre) === nombreResponsableExcel
           );
 
           const mesa = mesas.find(
-            (m) => m.nombre.trim().toLowerCase() === nombreMesaExcel
+            (m) =>
+              normalizarTexto(m.nombre) === nombreMesaExcel ||
+              normalizarTexto(m.usuario) === nombreMesaExcel
           );
 
           if (!nombre || !responsable) {
-            errores += 1;
+            errores++;
             continue;
           }
 
@@ -615,7 +624,7 @@ function CooperativaScreen({
 
           const docRef = await addDoc(collection(db, "vots"), nuevo);
           nuevos.push({ id: docRef.id, ...nuevo });
-          importados += 1;
+          importados++;
         }
 
         if (nuevos.length) {
@@ -626,6 +635,7 @@ function CooperativaScreen({
           `Importación completada. Correctos: ${importados}. Errores: ${errores}.`
         );
       } catch (error) {
+        console.error(error);
         setMensajeImportacion("Error al leer el Excel.");
       }
     };
