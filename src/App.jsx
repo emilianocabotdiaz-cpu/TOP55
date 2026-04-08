@@ -18,14 +18,22 @@ function Badge({ children, tone = "gray" }) {
     red: "bg-rose-100 text-rose-700",
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium ${styles[tone]}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium ${styles[tone]}`}
+    >
       {children}
     </span>
   );
 }
 
 function Card({ children, className = "" }) {
-  return <div className={`rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm ${className}`}>{children}</div>;
+  return (
+    <div
+      className={`rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm ${className}`}
+    >
+      {children}
+    </div>
+  );
 }
 
 function StatCard({ title, value }) {
@@ -39,7 +47,10 @@ function StatCard({ title, value }) {
 
 function LogoutButton({ onLogout }) {
   return (
-    <button onClick={onLogout} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium">
+    <button
+      onClick={onLogout}
+      className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium"
+    >
       Salir
     </button>
   );
@@ -52,7 +63,10 @@ function ActionButton({ children, onClick, tone = "default" }) {
     dark: "bg-slate-950 text-white",
   };
   return (
-    <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}`}>
+    <button
+      onClick={onClick}
+      className={`rounded-lg px-3 py-1.5 text-xs font-medium ${classes[tone]}`}
+    >
       {children}
     </button>
   );
@@ -63,6 +77,15 @@ function LoginScreen({ onLogin, responsables, interactores }) {
   const [usuario, setUsuario] = useState("admin");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    if (rol === "responsable" && responsables.length > 0 && !usuario) {
+      setUsuario(responsables[0].usuario);
+    }
+    if (rol === "interactor" && interactores.filter((i) => i.activo).length > 0 && !usuario) {
+      setUsuario(interactores.filter((i) => i.activo)[0].usuario);
+    }
+  }, [rol, responsables, interactores, usuario]);
+
   const entrar = () => {
     if (rol === "cooperativa") {
       if (password === "17052026") onLogin({ rol, usuario: "admin" });
@@ -71,18 +94,24 @@ function LoginScreen({ onLogin, responsables, interactores }) {
     }
 
     if (rol === "responsable") {
-      const user = responsables.find((r) => r.usuario === usuario && r.password === password);
+      const user = responsables.find(
+        (r) => r.usuario === usuario && r.password === password
+      );
       if (user) onLogin({ rol, usuario });
       else alert("Credenciales incorrectas");
       return;
     }
 
     if (rol === "interactor") {
-      const user = interactores.find((i) => i.usuario === usuario && i.password === password && i.activo);
+      const user = interactores.find(
+        (i) => i.usuario === usuario && i.password === password && i.activo
+      );
       if (user) onLogin({ rol, usuario });
       else alert("Credenciales incorrectas");
     }
   };
+
+  const interactoresActivos = interactores.filter((i) => i.activo);
 
   return (
     <div className="min-h-screen bg-slate-100 px-5 py-8 md:px-8">
@@ -100,9 +129,13 @@ function LoginScreen({ onLogin, responsables, interactores }) {
                   const nuevoRol = e.target.value;
                   setRol(nuevoRol);
                   setPassword("");
-                  if (nuevoRol === "responsable") setUsuario(responsables[0]?.usuario || "");
-                  else if (nuevoRol === "interactor") setUsuario(interactores[0]?.usuario || "");
-                  else setUsuario("admin");
+                  if (nuevoRol === "responsable") {
+                    setUsuario(responsables[0]?.usuario || "");
+                  } else if (nuevoRol === "interactor") {
+                    setUsuario(interactoresActivos[0]?.usuario || "");
+                  } else {
+                    setUsuario("admin");
+                  }
                 }}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
               >
@@ -114,7 +147,9 @@ function LoginScreen({ onLogin, responsables, interactores }) {
 
             {rol === "responsable" && (
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Responsable</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Responsable
+                </label>
                 <select
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
@@ -131,25 +166,27 @@ function LoginScreen({ onLogin, responsables, interactores }) {
 
             {rol === "interactor" && (
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Interactor</label>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Interactor
+                </label>
                 <select
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
                   className="h-12 w-full rounded-xl border border-slate-200 px-4 outline-none"
                 >
-                  {interactores
-                    .filter((i) => i.activo)
-                    .map((i) => (
-                      <option key={i.id} value={i.usuario}>
-                        {i.nombre}
-                      </option>
-                    ))}
+                  {interactoresActivos.map((i) => (
+                    <option key={i.id} value={i.usuario}>
+                      {i.nombre}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Contraseña</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Contraseña
+              </label>
               <input
                 type="password"
                 value={password}
@@ -159,7 +196,10 @@ function LoginScreen({ onLogin, responsables, interactores }) {
               />
             </div>
 
-            <button onClick={entrar} className="h-12 w-full rounded-xl bg-slate-950 text-white font-semibold">
+            <button
+              onClick={entrar}
+              className="h-12 w-full rounded-xl bg-slate-950 font-semibold text-white"
+            >
               Entrar
             </button>
           </div>
@@ -170,23 +210,17 @@ function LoginScreen({ onLogin, responsables, interactores }) {
 }
 
 function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
-  const [referencia, setReferencia] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
 
-  const registrar = async () => {
-    const ref = referencia.trim().toUpperCase();
-    if (!ref) return;
+  const interactorActivo = interactores.find((i) => i.usuario === usuario);
+  const votsAsignados = vots.filter((o) => o.interactorId === interactorActivo?.id);
+  const pendientes = votsAsignados.filter((o) => !o.registrada);
+  const registrados = votsAsignados.filter((o) => o.registrada);
 
-    const existe = vots.find((o) => o.referencia === ref);
-    if (!existe) {
-      setMensaje("Referencia no encontrada");
-      setTipoMensaje("red");
-      return;
-    }
-
-    if (existe.registrada) {
-      setMensaje("Ya registrada");
+  const registrarDirecto = async (vot) => {
+    if (vot.registrada) {
+      setMensaje("Ese VOT ya estaba registrado");
       setTipoMensaje("amber");
       return;
     }
@@ -196,50 +230,100 @@ function InteractorScreen({ onLogout, vots, setVots, usuario, interactores }) {
       minute: "2-digit",
     });
 
-    if (existe.id) {
-      await updateDoc(doc(db, "vots", existe.id), { registrada: true, hora });
+    if (vot.id) {
+      await updateDoc(doc(db, "vots", vot.id), { registrada: true, hora });
     }
 
     setVots((prev) =>
-      prev.map((o) => (o.referencia === ref ? { ...o, registrada: true, hora } : o))
+      prev.map((o) => (o.id === vot.id ? { ...o, registrada: true, hora } : o))
     );
-    setReferencia("");
-    setMensaje("Registrada correctamente");
+
+    setMensaje(`Registrado correctamente: ${vot.referencia}`);
     setTipoMensaje("green");
   };
 
   return (
     <div className="min-h-screen bg-slate-100 px-5 py-6 md:px-8">
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-slate-950">Pantalla interactor</h1>
-              <p className="mt-2 text-slate-600">Solo puede registrar referencias.</p>
+              <p className="mt-2 text-slate-600">VOTs asignados para control.</p>
               <p className="mt-1 text-sm text-slate-500">
-                Interactor activo: {interactores.find((i) => i.usuario === usuario)?.nombre || usuario}
+                Interactor activo: {interactorActivo?.nombre || usuario}
               </p>
             </div>
             <LogoutButton onLogout={onLogout} />
           </div>
         </Card>
 
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatCard title="Asignados" value={votsAsignados.length} />
+          <StatCard title="Pendientes" value={pendientes.length} />
+          <StatCard title="Registrados" value={registrados.length} />
+        </div>
+
         <Card>
-          <h2 className="text-2xl font-bold text-slate-950">Registro de entrada</h2>
-          <div className="mt-6 space-y-4">
-            <input
-              value={referencia}
-              onChange={(e) => setReferencia(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === "Enter" && registrar()}
-              placeholder="REFERENCIA"
-              className="h-28 w-full rounded-2xl border border-slate-200 px-6 text-center text-5xl font-bold tracking-wide outline-none"
-            />
-            <button onClick={registrar} className="h-24 w-full rounded-2xl bg-slate-950 text-3xl font-bold text-white">
-              REGISTRAR
-            </button>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-bold text-slate-950">Listado de VOTs asignados</h2>
+            <Badge tone={tipoMensaje}>
+              {mensaje || "Selecciona un VOT para registrar"}
+            </Badge>
           </div>
-          <div className="mt-5 flex justify-center">
-            <Badge tone={tipoMensaje}>{mensaje || "Esperando referencia"}</Badge>
+
+          <div className="mt-5 overflow-auto rounded-xl border border-slate-200">
+            <table className="min-w-full text-sm">
+              <thead className="bg-slate-100 text-slate-800">
+                <tr>
+                  <th className="px-4 py-3 text-left">Referencia</th>
+                  <th className="px-4 py-3 text-left">Nombre</th>
+                  <th className="px-4 py-3 text-left">Teléfono</th>
+                  <th className="px-4 py-3 text-left">Hora</th>
+                  <th className="px-4 py-3 text-left">Estado</th>
+                  <th className="px-4 py-3 text-left">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {votsAsignados.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-4 py-6 text-center text-slate-500">
+                      No hay VOTs asignados a este interactor.
+                    </td>
+                  </tr>
+                ) : (
+                  votsAsignados.map((o) => (
+                    <tr key={o.id} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold">{o.referencia}</td>
+                      <td className="px-4 py-3">{o.nombre}</td>
+                      <td className="px-4 py-3">{o.telefono || "-"}</td>
+                      <td className="px-4 py-3">{o.hora || "-"}</td>
+                      <td className="px-4 py-3">
+                        {o.registrada ? (
+                          <Badge tone="green">Registrado</Badge>
+                        ) : (
+                          <Badge tone="amber">Pendiente</Badge>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {o.registrada ? (
+                          <span className="text-xs font-medium text-slate-400">
+                            Completado
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => registrarDirecto(o)}
+                            className="rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white"
+                          >
+                            Registrar
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </Card>
       </div>
@@ -253,7 +337,6 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
   const llegadas = votsResp.filter((o) => o.registrada).length;
   const pendientes = votsResp.length - llegadas;
 
- 
   const abrirWhatsApp = (telefono, nombre) => {
     if (!telefono) {
       alert("Este registro no tiene teléfono");
@@ -314,15 +397,19 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables }) {
                     <td className="px-4 py-3">{o.telefono}</td>
                     <td className="px-4 py-3">{o.hora || "-"}</td>
                     <td className="px-4 py-3">
-                      {o.registrada ? <Badge tone="green">Ha entrado</Badge> : <Badge tone="amber">Falta</Badge>}
+                      {o.registrada ? (
+                        <Badge tone="green">Ha entrado</Badge>
+                      ) : (
+                        <Badge tone="amber">Falta</Badge>
+                      )}
                     </td>
                     <td className="px-4 py-3">
-                     <button
-  onClick={() => abrirWhatsApp(o.telefono, o.nombre)}
-  className="flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white"
->
-  <span>📱</span> WhatsApp
-</button>
+                      <button
+                        onClick={() => abrirWhatsApp(o.telefono, o.nombre)}
+                        className="flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white"
+                      >
+                        <span>📱</span> WhatsApp
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -347,7 +434,8 @@ function CooperativaScreen({
   const [nuevaReferencia, setNuevaReferencia] = useState("");
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [nuevoTelefono, setNuevoTelefono] = useState("");
-  const [nuevoResponsableId, setNuevoResponsableId] = useState(responsables[0]?.id || "");
+  const [nuevoResponsableId, setNuevoResponsableId] = useState("");
+  const [nuevoInteractorId, setNuevoInteractorId] = useState("");
   const [mensajeImportacion, setMensajeImportacion] = useState("");
 
   const [nombreResponsable, setNombreResponsable] = useState("");
@@ -362,6 +450,12 @@ function CooperativaScreen({
   const [responsableEditando, setResponsableEditando] = useState(null);
   const [interactorEditando, setInteractorEditando] = useState(null);
 
+  useEffect(() => {
+    if (!nuevoResponsableId && responsables.length > 0) {
+      setNuevoResponsableId(responsables[0].id);
+    }
+  }, [responsables, nuevoResponsableId]);
+
   const total = vots.length;
   const llegadas = vots.filter((o) => o.registrada).length;
   const pendientes = total - llegadas;
@@ -369,12 +463,16 @@ function CooperativaScreen({
   const exportarVots = () => {
     const datos = vots.map((v) => {
       const responsable = responsables.find((r) => r.id === v.responsableId);
+      const interactor = interactores.find((i) => i.id === v.interactorId);
+
       return {
         referencia: v.referencia,
         nombre: v.nombre,
         telefono: v.telefono,
         responsable: responsable?.nombre || "",
         usuario_responsable: responsable?.usuario || "",
+        interactor: interactor?.nombre || "",
+        usuario_interactor: interactor?.usuario || "",
         hora: v.hora || "",
         registrada: v.registrada ? "sí" : "no",
       };
@@ -398,7 +496,8 @@ function CooperativaScreen({
           referencia: ref,
           nombre: nuevoNombre,
           telefono: nuevoTelefono,
-          responsableId: Number(nuevoResponsableId),
+          responsableId: nuevoResponsableId,
+          interactorId: nuevoInteractorId || "",
         });
       }
 
@@ -410,7 +509,8 @@ function CooperativaScreen({
                 referencia: ref,
                 nombre: nuevoNombre,
                 telefono: nuevoTelefono,
-                responsableId: Number(nuevoResponsableId),
+                responsableId: nuevoResponsableId,
+                interactorId: nuevoInteractorId || "",
               }
             : v
         )
@@ -426,7 +526,8 @@ function CooperativaScreen({
         referencia: ref,
         nombre: nuevoNombre,
         telefono: nuevoTelefono,
-        responsableId: Number(nuevoResponsableId),
+        responsableId: nuevoResponsableId,
+        interactorId: nuevoInteractorId || "",
         hora: null,
         registrada: false,
       };
@@ -438,6 +539,10 @@ function CooperativaScreen({
     setNuevaReferencia("");
     setNuevoNombre("");
     setNuevoTelefono("");
+    setNuevoInteractorId("");
+    if (responsables.length > 0) {
+      setNuevoResponsableId(responsables[0].id);
+    }
   };
 
   const editarVot = (v) => {
@@ -445,7 +550,8 @@ function CooperativaScreen({
     setNuevaReferencia(v.referencia);
     setNuevoNombre(v.nombre);
     setNuevoTelefono(v.telefono);
-    setNuevoResponsableId(String(v.responsableId));
+    setNuevoResponsableId(v.responsableId || "");
+    setNuevoInteractorId(v.interactorId || "");
   };
 
   const eliminarVot = async (id) => {
@@ -477,7 +583,9 @@ function CooperativaScreen({
           const referencia = String(fila.referencia || "").trim().toUpperCase();
           const nombre = String(fila.nombre || "").trim();
           const telefono = String(fila.telefono || "").trim();
-          const nombreResponsableExcel = String(fila.responsable || "").trim().toLowerCase();
+          const nombreResponsableExcel = String(fila.responsable || "")
+            .trim()
+            .toLowerCase();
 
           const responsable = responsables.find(
             (r) => r.nombre.trim().toLowerCase() === nombreResponsableExcel
@@ -493,6 +601,7 @@ function CooperativaScreen({
             nombre,
             telefono,
             responsableId: responsable.id,
+            interactorId: "",
             hora: null,
             registrada: false,
           };
@@ -504,7 +613,9 @@ function CooperativaScreen({
         }
 
         if (nuevos.length) setVots((prev) => [...prev, ...nuevos]);
-        setMensajeImportacion(`Importación completada. Correctos: ${importados}. Errores: ${errores}.`);
+        setMensajeImportacion(
+          `Importación completada. Correctos: ${importados}. Errores: ${errores}.`
+        );
       } catch (error) {
         setMensajeImportacion("Error al leer el Excel.");
       }
@@ -607,7 +718,9 @@ function CooperativaScreen({
 
       setInteractorEditando(null);
     } else {
-      const usuario = nombreInteractor.toLowerCase().split(" ")[0] + interactores.length;
+      const usuario =
+        nombreInteractor.toLowerCase().split(" ")[0] + interactores.length;
+
       const nuevoInteractor = {
         nombre: nombreInteractor,
         telefono: telefonoInteractor,
@@ -633,6 +746,12 @@ function CooperativaScreen({
   };
 
   const eliminarInteractor = async (id) => {
+    const tieneVots = vots.some((v) => v.interactorId === id);
+    if (tieneVots) {
+      alert("No puedes eliminar un interactor con VOTs asignados.");
+      return;
+    }
+
     if (!window.confirm("¿Eliminar este interactor?")) return;
     await deleteDoc(doc(db, "interactores", id));
     setInteractores((prev) => prev.filter((i) => i.id !== id));
@@ -659,7 +778,9 @@ function CooperativaScreen({
 
         <div className="grid gap-6 xl:grid-cols-3">
           <Card>
-            <h2 className="text-lg font-bold text-slate-950">{votEditando ? "Editar VOT" : "Alta de VOT"}</h2>
+            <h2 className="text-lg font-bold text-slate-950">
+              {votEditando ? "Editar VOT" : "Alta de VOT"}
+            </h2>
             <div className="mt-4 space-y-3">
               <input
                 value={nuevaReferencia}
@@ -690,7 +811,26 @@ function CooperativaScreen({
                   </option>
                 ))}
               </select>
-              <button onClick={crearOActualizarVot} className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold">
+
+              <select
+                value={nuevoInteractorId}
+                onChange={(e) => setNuevoInteractorId(e.target.value)}
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              >
+                <option value="">Sin interactor asignado</option>
+                {interactores
+                  .filter((i) => i.activo)
+                  .map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.nombre}
+                    </option>
+                  ))}
+              </select>
+
+              <button
+                onClick={crearOActualizarVot}
+                className="h-11 w-full rounded-xl bg-slate-950 font-semibold text-white"
+              >
                 {votEditando ? "Guardar cambios" : "Crear VOT"}
               </button>
             </div>
@@ -698,11 +838,22 @@ function CooperativaScreen({
 
           <Card>
             <h2 className="text-lg font-bold text-slate-950">Importar / Exportar VOTs</h2>
-            <p className="mt-2 text-sm text-slate-500">Columnas: referencia, nombre, telefono, responsable</p>
+            <p className="mt-2 text-sm text-slate-500">
+              Columnas: referencia, nombre, telefono, responsable
+            </p>
             <div className="mt-4 space-y-3">
-              <input type="file" accept=".xlsx,.xls" onChange={importarExcel} className="block w-full text-sm text-slate-700" />
-              <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Ejemplo responsable: Juan Pérez</div>
-              <ActionButton tone="dark" onClick={exportarVots}>Exportar VOTs</ActionButton>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={importarExcel}
+                className="block w-full text-sm text-slate-700"
+              />
+              <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+                Ejemplo responsable: Juan Pérez
+              </div>
+              <ActionButton tone="dark" onClick={exportarVots}>
+                Exportar VOTs
+              </ActionButton>
               {mensajeImportacion ? <Badge tone="gray">{mensajeImportacion}</Badge> : null}
             </div>
           </Card>
@@ -733,7 +884,7 @@ function CooperativaScreen({
               />
               <button
                 onClick={crearOActualizarResponsable}
-                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
+                className="h-11 w-full rounded-xl bg-slate-950 font-semibold text-white"
               >
                 {responsableEditando ? "Guardar cambios" : "Crear responsable"}
               </button>
@@ -768,7 +919,7 @@ function CooperativaScreen({
               />
               <button
                 onClick={crearOActualizarInteractor}
-                className="h-11 w-full rounded-xl bg-slate-950 text-white font-semibold"
+                className="h-11 w-full rounded-xl bg-slate-950 font-semibold text-white"
               >
                 {interactorEditando ? "Guardar cambios" : "Crear interactor"}
               </button>
@@ -784,21 +935,27 @@ function CooperativaScreen({
                     <th className="px-4 py-3 text-left">Referencia</th>
                     <th className="px-4 py-3 text-left">Nombre</th>
                     <th className="px-4 py-3 text-left">Responsable</th>
+                    <th className="px-4 py-3 text-left">Interactor</th>
                     <th className="px-4 py-3 text-left">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {vots.map((o) => {
                     const responsable = responsables.find((r) => r.id === o.responsableId);
+                    const interactor = interactores.find((i) => i.id === o.interactorId);
+
                     return (
                       <tr key={o.id} className="border-t border-slate-200">
                         <td className="px-4 py-3 font-semibold">{o.referencia}</td>
                         <td className="px-4 py-3">{o.nombre}</td>
-                        <td className="px-4 py-3">{responsable?.nombre}</td>
+                        <td className="px-4 py-3">{responsable?.nombre || "-"}</td>
+                        <td className="px-4 py-3">{interactor?.nombre || "-"}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
                             <ActionButton onClick={() => editarVot(o)}>Editar</ActionButton>
-                            <ActionButton tone="danger" onClick={() => eliminarVot(o.id)}>Eliminar</ActionButton>
+                            <ActionButton tone="danger" onClick={() => eliminarVot(o.id)}>
+                              Eliminar
+                            </ActionButton>
                           </div>
                         </td>
                       </tr>
@@ -832,7 +989,9 @@ function CooperativaScreen({
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <ActionButton onClick={() => editarResponsable(r)}>Editar</ActionButton>
-                          <ActionButton tone="danger" onClick={() => eliminarResponsable(r.id)}>Eliminar</ActionButton>
+                          <ActionButton tone="danger" onClick={() => eliminarResponsable(r.id)}>
+                            Eliminar
+                          </ActionButton>
                         </div>
                       </td>
                     </tr>
@@ -863,7 +1022,9 @@ function CooperativaScreen({
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <ActionButton onClick={() => editarInteractor(i)}>Editar</ActionButton>
-                          <ActionButton tone="danger" onClick={() => eliminarInteractor(i.id)}>Eliminar</ActionButton>
+                          <ActionButton tone="danger" onClick={() => eliminarInteractor(i.id)}>
+                            Eliminar
+                          </ActionButton>
                         </div>
                       </td>
                     </tr>
@@ -894,9 +1055,21 @@ export default function App() {
           getDocs(collection(db, "interactores")),
         ]);
 
-        const datosVots = snapVots.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const datosResponsables = snapResponsables.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const datosInteractores = snapInteractores.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const datosVots = snapVots.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          interactorId: d.data().interactorId || "",
+        }));
+
+        const datosResponsables = snapResponsables.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+
+        const datosInteractores = snapInteractores.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
 
         setVots(datosVots);
         setResponsables(datosResponsables);
@@ -912,11 +1085,21 @@ export default function App() {
   }, []);
 
   if (!cargadoNube) {
-    return <div className="min-h-screen bg-slate-100 p-8 text-slate-700">Cargando datos...</div>;
+    return (
+      <div className="min-h-screen bg-slate-100 p-8 text-slate-700">
+        Cargando datos...
+      </div>
+    );
   }
 
   if (!sesion) {
-    return <LoginScreen onLogin={setSesion} responsables={responsables} interactores={interactores} />;
+    return (
+      <LoginScreen
+        onLogin={setSesion}
+        responsables={responsables}
+        interactores={interactores}
+      />
+    );
   }
 
   if (sesion.rol === "interactor") {
