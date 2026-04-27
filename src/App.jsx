@@ -217,16 +217,33 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
 
+  // 🎮 Fondos tipo videojuego
+  const fondos = [
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420",
+    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+    "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf",
+  ];
+
+  const [fondoIndex, setFondoIndex] = useState(0);
+
+  // 🔄 Cambio automático de fondo
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setFondoIndex((prev) => (prev + 1) % fondos.length);
+    }, 5000);
+
+    return () => clearInterval(intervalo);
+  }, []);
+
   const mesaActiva = mesas.find((m) => m.usuario === usuario);
   const votsAsignados = vots.filter((o) => o.mesaId === mesaActiva?.id);
-  const pendientes = votsAsignados.filter((o) => !o.registrada).length;
-  const registrados = votsAsignados.filter((o) => o.registrada).length;
 
   const registrar = async () => {
     const num = String(numero || "").trim();
 
     if (!num) {
-      setMensaje("Introduce un número");
+      setMensaje("Introduce número");
       setTipoMensaje("red");
       return;
     }
@@ -236,13 +253,13 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     if (!vot) {
-      setMensaje("Número no encontrado en esta mesa");
+      setMensaje("Número no encontrado");
       setTipoMensaje("red");
       return;
     }
 
     if (vot.registrada) {
-      setMensaje("Ya estaba registrado");
+      setMensaje("Ya registrado");
       setTipoMensaje("amber");
       return;
     }
@@ -264,33 +281,35 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     setNumero("");
-    setMensaje(`Registrado correctamente: ${vot.numero}`);
+    setMensaje("✔ Registrado");
     setTipoMensaje("green");
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 px-5 py-6 md:px-8">
-      <div className="mx-auto max-w-3xl space-y-6">
+    <div
+      className="min-h-screen px-5 py-6 md:px-8 bg-cover bg-center transition-all duration-1000 relative"
+      style={{
+        backgroundImage: `url(${fondos[fondoIndex]})`,
+      }}
+    >
+      {/* 🌑 Capa oscura */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+      {/* 🎮 Contenido */}
+      <div className="relative z-10 mx-auto max-w-3xl space-y-6">
         <Card>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-950">
-                Pantalla mesa
-              </h1>
-              <p className="mt-2 text-slate-600">
-                Registro por número asignado.
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                Mesa activa: {mesaActiva?.nombre || usuario}
-              </p>
-            </div>
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-white">🎮 Mesa</h1>
             <LogoutButton onLogout={onLogout} />
           </div>
+          <p className="mt-2 text-slate-300">
+            Mesa: {mesaActiva?.nombre || usuario}
+          </p>
         </Card>
 
-          <Card>
-          <h2 className="text-2xl font-bold text-slate-950">
-            Registrar entrada
+        <Card>
+          <h2 className="text-2xl font-bold text-white text-center">
+            Introducir número
           </h2>
 
           <div className="mt-6 space-y-4">
@@ -298,21 +317,21 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && registrar()}
-              placeholder="Número"
-              className="h-28 w-full rounded-2xl border border-slate-200 px-6 text-center text-5xl font-bold outline-none"
+              placeholder="0000"
+              className="h-28 w-full text-center text-5xl font-bold rounded-xl bg-black text-green-400 border border-green-500 shadow-lg tracking-widest outline-none"
             />
 
             <button
               onClick={registrar}
-              className="h-20 w-full rounded-2xl bg-green-600 text-3xl font-bold text-white shadow-sm hover:bg-green-700"
+              className="h-20 w-full bg-green-500 text-black text-2xl rounded-xl font-bold shadow-lg hover:bg-green-400 transition"
             >
-              Registrar
+              REGISTRAR
             </button>
           </div>
 
           <div className="mt-5 flex justify-center">
             <Badge tone={tipoMensaje}>
-              {mensaje || "Introduce el número del VOT"}
+              {mensaje || "Esperando número..."}
             </Badge>
           </div>
         </Card>
@@ -320,7 +339,6 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     </div>
   );
 }
-
 function ResponsableScreen({ onLogout, usuario, vots, responsables, mesas }) {
   const responsable = responsables.find((r) => r.usuario === usuario);
   const votsResp = vots.filter((o) => o.responsableId === responsable?.id);
