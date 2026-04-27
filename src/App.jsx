@@ -216,82 +216,52 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
   const [numero, setNumero] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
-  const [juegoIndex, setJuegoIndex] = useState(0);
+  const [redIndex, setRedIndex] = useState(0);
 
-  const juegos = [
+  const redes = [
     {
-      titulo: "SPACE RUNNER",
-      subtitulo: "MISSION CODE",
-      fondo: "from-slate-950 via-blue-950 to-slate-900",
-      panel: "bg-slate-950 border-blue-700",
-      pantalla: "bg-slate-900 border-blue-500",
-      texto: "text-blue-200",
-      input: "bg-slate-950 text-blue-200 border-blue-500",
-      boton: "bg-blue-700 hover:bg-blue-600 text-white",
-      etiqueta: "READY",
+      nombre: "InstaPost",
+      fondo: "bg-slate-100",
+      barra: "bg-white",
+      acento: "text-pink-600",
+      boton: "text-blue-600",
+      usuario: "viajes_huelva",
+      imagen: "bg-gradient-to-br from-pink-300 via-orange-200 to-yellow-200",
     },
     {
-      titulo: "FOREST QUEST",
-      subtitulo: "ACCESS CODE",
-      fondo: "from-emerald-950 via-slate-900 to-stone-900",
-      panel: "bg-slate-950 border-emerald-700",
-      pantalla: "bg-stone-950 border-emerald-600",
-      texto: "text-emerald-200",
-      input: "bg-slate-950 text-emerald-200 border-emerald-600",
-      boton: "bg-emerald-700 hover:bg-emerald-600 text-white",
-      etiqueta: "START",
+      nombre: "FaceWall",
+      fondo: "bg-slate-100",
+      barra: "bg-white",
+      acento: "text-blue-700",
+      boton: "text-blue-700",
+      usuario: "noticias_locales",
+      imagen: "bg-gradient-to-br from-blue-200 via-sky-300 to-slate-200",
     },
     {
-      titulo: "DESERT RALLY",
-      subtitulo: "RACE NUMBER",
-      fondo: "from-stone-900 via-amber-950 to-slate-950",
-      panel: "bg-stone-950 border-amber-700",
-      pantalla: "bg-neutral-950 border-amber-600",
-      texto: "text-amber-200",
-      input: "bg-stone-950 text-amber-200 border-amber-600",
-      boton: "bg-amber-700 hover:bg-amber-600 text-white",
-      etiqueta: "GO",
+      nombre: "TikTalk",
+      fondo: "bg-zinc-950",
+      barra: "bg-zinc-900",
+      acento: "text-white",
+      boton: "text-cyan-300",
+      usuario: "trend_today",
+      imagen: "bg-gradient-to-br from-zinc-800 via-slate-700 to-black",
     },
     {
-      titulo: "DEEP OCEAN",
-      subtitulo: "DIVE CODE",
-      fondo: "from-cyan-950 via-slate-900 to-blue-950",
-      panel: "bg-slate-950 border-cyan-700",
-      pantalla: "bg-slate-900 border-cyan-600",
-      texto: "text-cyan-200",
-      input: "bg-slate-950 text-cyan-200 border-cyan-600",
-      boton: "bg-cyan-800 hover:bg-cyan-700 text-white",
-      etiqueta: "LAUNCH",
-    },
-    {
-      titulo: "NIGHT CITY",
-      subtitulo: "ENTRY ID",
-      fondo: "from-slate-950 via-indigo-950 to-zinc-900",
-      panel: "bg-zinc-950 border-indigo-700",
-      pantalla: "bg-slate-950 border-indigo-500",
-      texto: "text-indigo-200",
-      input: "bg-zinc-950 text-indigo-200 border-indigo-500",
-      boton: "bg-indigo-700 hover:bg-indigo-600 text-white",
-      etiqueta: "ENTER",
-    },
-    {
-      titulo: "RETRO CUP",
-      subtitulo: "PLAYER CODE",
-      fondo: "from-neutral-900 via-stone-900 to-zinc-950",
-      panel: "bg-neutral-950 border-stone-600",
-      pantalla: "bg-black border-stone-500",
-      texto: "text-stone-200",
-      input: "bg-black text-stone-200 border-stone-500",
-      boton: "bg-stone-700 hover:bg-stone-600 text-white",
-      etiqueta: "PLAY",
+      nombre: "SocialNow",
+      fondo: "bg-stone-100",
+      barra: "bg-white",
+      acento: "text-stone-800",
+      boton: "text-emerald-700",
+      usuario: "eventos_del_dia",
+      imagen: "bg-gradient-to-br from-emerald-200 via-stone-200 to-amber-100",
     },
   ];
 
-  const juego = juegos[juegoIndex];
+  const red = redes[redIndex];
 
   useEffect(() => {
     const intervalo = setInterval(() => {
-      setJuegoIndex((prev) => (prev + 1) % juegos.length);
+      setRedIndex((prev) => (prev + 1) % redes.length);
     }, 300000); // 5 minutos
 
     return () => clearInterval(intervalo);
@@ -299,14 +269,12 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
 
   const mesaActiva = mesas.find((m) => m.usuario === usuario);
   const votsAsignados = vots.filter((o) => o.mesaId === mesaActiva?.id);
-  const pendientes = votsAsignados.filter((o) => !o.registrada).length;
-  const registrados = votsAsignados.filter((o) => o.registrada).length;
 
-  const registrar = async () => {
+  const publicarComentario = async () => {
     const num = String(numero || "").trim();
 
     if (!num) {
-      setMensaje("Introduce un número");
+      setMensaje("Escribe un comentario");
       setTipoMensaje("red");
       return;
     }
@@ -316,13 +284,13 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     if (!vot) {
-      setMensaje("Número no encontrado en esta mesa");
+      setMensaje("No se pudo publicar");
       setTipoMensaje("red");
       return;
     }
 
     if (vot.registrada) {
-      setMensaje("Ya estaba registrado");
+      setMensaje("Comentario duplicado");
       setTipoMensaje("amber");
       return;
     }
@@ -344,70 +312,114 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     setNumero("");
-    setMensaje(`Registrado correctamente: ${vot.numero}`);
+    setMensaje("Comentario publicado");
     setTipoMensaje("green");
   };
 
   return (
-    <div
-      className={`min-h-screen bg-gradient-to-br ${juego.fondo} px-5 py-6 transition-all duration-1000 md:px-8`}
-    >
-      <div className="mx-auto max-w-3xl space-y-6">
-        <div className={`rounded-[28px] border p-5 shadow-2xl ${juego.panel}`}>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className={`text-xs font-bold tracking-[0.35em] ${juego.texto}`}>
-                {mesaActiva?.nombre || usuario}
-              </div>
-              <h1 className={`mt-2 text-3xl font-black tracking-widest ${juego.texto}`}>
-                {juego.titulo}
-              </h1>
-            </div>
+    <div className={`min-h-screen ${red.fondo} px-4 py-5 transition-all duration-1000`}>
+      <div className="mx-auto max-w-md overflow-hidden rounded-[32px] border border-black/10 bg-white shadow-2xl">
+        
+        {/* Barra superior */}
+        <div className={`flex items-center justify-between border-b border-slate-200 px-4 py-3 ${red.barra}`}>
+          <div className={`text-2xl font-black tracking-tight ${red.acento}`}>
+            {red.nombre}
+          </div>
 
-            <button
-              onClick={onLogout}
-              className="rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-xs font-bold text-white/80"
-            >
-              EXIT
-            </button>
+          <button
+            onClick={onLogout}
+            className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600"
+          >
+            salir
+          </button>
+        </div>
+
+        {/* Stories */}
+        <div className="flex gap-3 overflow-hidden border-b border-slate-200 bg-white px-4 py-3">
+          {["Mesa", "Local", "Directo", "Hoy", "Info"].map((s, i) => (
+            <div key={i} className="flex shrink-0 flex-col items-center gap-1">
+              <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-pink-500 via-orange-400 to-yellow-300 p-[3px]">
+                <div className="h-full w-full rounded-full border-2 border-white bg-slate-200"></div>
+              </div>
+              <span className="text-[10px] text-slate-500">{s}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Cabecera post */}
+        <div className="flex items-center justify-between bg-white px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-slate-300"></div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">{red.usuario}</div>
+              <div className="text-xs text-slate-500">
+                {mesaActiva?.nombre || usuario} · ahora
+              </div>
+            </div>
+          </div>
+          <div className="text-xl text-slate-500">•••</div>
+        </div>
+
+        {/* Imagen simulada */}
+        <div className={`relative h-[330px] ${red.imagen}`}>
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute left-8 top-10 h-24 w-24 rounded-full bg-white/40"></div>
+            <div className="absolute bottom-12 right-8 h-32 w-32 rounded-full bg-black/10"></div>
+            <div className="absolute left-12 bottom-20 h-3 w-48 rounded-full bg-white/50"></div>
+            <div className="absolute left-12 bottom-14 h-3 w-36 rounded-full bg-white/40"></div>
+          </div>
+
+          <div className="absolute bottom-5 left-5 rounded-2xl bg-black/30 px-4 py-2 text-sm font-semibold text-white backdrop-blur">
+            Nueva publicación
           </div>
         </div>
 
-        <div className={`rounded-[32px] border p-6 shadow-2xl ${juego.panel}`}>
-          <div className={`rounded-[24px] border p-6 text-center shadow-inner ${juego.pantalla}`}>
-            <div className={`text-xl font-black tracking-[0.25em] ${juego.texto}`}>
-              {juego.subtitulo}
+        {/* Acciones */}
+        <div className="bg-white px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex gap-4 text-2xl">
+              <span>♡</span>
+              <span>💬</span>
+              <span>↗</span>
             </div>
+            <span className="text-2xl">▱</span>
+          </div>
+
+          <div className="mt-2 text-sm font-semibold text-slate-900">
+            Les gusta a varios usuarios
+          </div>
+
+          <div className="mt-1 text-sm text-slate-500">
+            Ver todos los comentarios
+          </div>
+
+          <div className="mt-3 flex justify-center">
+            <Badge tone={tipoMensaje}>
+              {mensaje || "Añade un comentario..."}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Campo fijo de comentario */}
+        <div className="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-slate-300"></div>
 
             <input
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && registrar()}
-              placeholder="0000"
+              onKeyDown={(e) => e.key === "Enter" && publicarComentario()}
+              placeholder="Añade un comentario..."
               autoFocus
-              className={`mt-6 h-28 w-full rounded-2xl border-2 px-6 text-center text-5xl font-black tracking-widest outline-none ${juego.input}`}
+              className="h-11 flex-1 rounded-full bg-slate-100 px-4 text-lg font-semibold outline-none"
             />
 
             <button
-              onClick={registrar}
-              className={`mt-6 h-20 w-full rounded-2xl text-2xl font-black tracking-widest shadow-lg transition ${juego.boton}`}
+              onClick={publicarComentario}
+              className={`text-sm font-bold ${red.boton}`}
             >
-              {juego.etiqueta}
+              Publicar
             </button>
-
-            <div className="mt-6">
-              <Badge tone={tipoMensaje}>
-                {mensaje || "Esperando número..."}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="mt-5 grid grid-cols-5 gap-3 opacity-60">
-            <div className="h-3 rounded-full bg-white/30"></div>
-            <div className="h-3 rounded-full bg-white/20"></div>
-            <div className="h-3 rounded-full bg-white/40"></div>
-            <div className="h-3 rounded-full bg-white/20"></div>
-            <div className="h-3 rounded-full bg-white/30"></div>
           </div>
         </div>
       </div>
