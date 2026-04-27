@@ -259,10 +259,24 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
 
   const red = redes[redIndex];
 
+  const activarPantallaCompleta = () => {
+    const elem = document.documentElement;
+
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  };
+
   useEffect(() => {
+    activarPantallaCompleta();
+
     const intervalo = setInterval(() => {
       setRedIndex((prev) => (prev + 1) % redes.length);
-    }, 300000); // 5 minutos
+    }, 300000);
 
     return () => clearInterval(intervalo);
   }, []);
@@ -317,24 +331,21 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
   };
 
   return (
-    <div className={`min-h-screen ${red.fondo} px-4 py-5 transition-all duration-1000`}>
+    <div className={`min-h-screen ${red.fondo} px-4 py-4 transition-all duration-1000`}>
       <div className="mx-auto max-w-md overflow-hidden rounded-[32px] border border-black/10 bg-white shadow-2xl">
-        
-        {/* Barra superior */}
         <div className={`flex items-center justify-between border-b border-slate-200 px-4 py-3 ${red.barra}`}>
           <div className={`text-2xl font-black tracking-tight ${red.acento}`}>
             {red.nombre}
           </div>
 
           <button
-            onClick={onLogout}
+            onClick={activarPantallaCompleta}
             className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600"
           >
-            salir
+            fullscreen
           </button>
         </div>
 
-        {/* Stories */}
         <div className="flex gap-3 overflow-hidden border-b border-slate-200 bg-white px-4 py-3">
           {["Mesa", "Local", "Directo", "Hoy", "Info"].map((s, i) => (
             <div key={i} className="flex shrink-0 flex-col items-center gap-1">
@@ -346,7 +357,6 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
           ))}
         </div>
 
-        {/* Cabecera post */}
         <div className="flex items-center justify-between bg-white px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-slate-300"></div>
@@ -360,7 +370,6 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
           <div className="text-xl text-slate-500">•••</div>
         </div>
 
-        {/* Imagen simulada */}
         <div className={`relative h-[330px] ${red.imagen}`}>
           <div className="absolute inset-0 opacity-30">
             <div className="absolute left-8 top-10 h-24 w-24 rounded-full bg-white/40"></div>
@@ -374,7 +383,6 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
           </div>
         </div>
 
-        {/* Acciones */}
         <div className="bg-white px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex gap-4 text-2xl">
@@ -400,7 +408,6 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
           </div>
         </div>
 
-        {/* Campo fijo de comentario */}
         <div className="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full bg-slate-300"></div>
@@ -422,6 +429,13 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
             </button>
           </div>
         </div>
+
+        <button
+          onClick={onLogout}
+          className="w-full border-t border-slate-200 bg-slate-50 py-3 text-xs font-bold text-slate-500"
+        >
+          salir
+        </button>
       </div>
     </div>
   );
