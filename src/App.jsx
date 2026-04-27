@@ -216,21 +216,19 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
   const [numero, setNumero] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
+  const [theme, setTheme] = useState(0);
 
-  // 🎮 Fondos tipo videojuego
   const fondos = [
-    "https://images.unsplash.com/photo-1511512578047-dfb367046420",
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-    "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf",
+    "from-cyan-900 via-teal-700 to-blue-950",
+    "from-purple-950 via-fuchsia-800 to-slate-950",
+    "from-orange-900 via-red-700 to-yellow-600",
+    "from-emerald-950 via-green-700 to-cyan-900",
+    "from-indigo-950 via-blue-800 to-pink-700",
   ];
 
-  const [fondoIndex, setFondoIndex] = useState(0);
-
-  // 🔄 Cambio automático de fondo
   useEffect(() => {
     const intervalo = setInterval(() => {
-      setFondoIndex((prev) => (prev + 1) % fondos.length);
+      setTheme((prev) => (prev + 1) % fondos.length);
     }, 5000);
 
     return () => clearInterval(intervalo);
@@ -243,7 +241,7 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     const num = String(numero || "").trim();
 
     if (!num) {
-      setMensaje("Introduce número");
+      setMensaje("INSERT NUMBER");
       setTipoMensaje("red");
       return;
     }
@@ -253,13 +251,13 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     if (!vot) {
-      setMensaje("Número no encontrado");
+      setMensaje("GAME OVER · NOT FOUND");
       setTipoMensaje("red");
       return;
     }
 
     if (vot.registrada) {
-      setMensaje("Ya registrado");
+      setMensaje("ALREADY PLAYED");
       setTipoMensaje("amber");
       return;
     }
@@ -281,60 +279,77 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     setNumero("");
-    setMensaje("✔ Registrado");
+    setMensaje("LEVEL COMPLETE");
     setTipoMensaje("green");
   };
 
   return (
     <div
-      className="min-h-screen px-5 py-6 md:px-8 bg-cover bg-center transition-all duration-1000 relative"
-      style={{
-        backgroundImage: `url(${fondos[fondoIndex]})`,
-      }}
+      className={`min-h-screen bg-gradient-to-br ${fondos[theme]} px-4 py-6 transition-all duration-1000`}
     >
-      {/* 🌑 Capa oscura */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-
-      {/* 🎮 Contenido */}
-      <div className="relative z-10 mx-auto max-w-3xl space-y-6">
-        <Card>
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-white">🎮 Mesa</h1>
-            <LogoutButton onLogout={onLogout} />
-          </div>
-          <p className="mt-2 text-slate-300">
-            Mesa: {mesaActiva?.nombre || usuario}
-          </p>
-        </Card>
-
-        <Card>
-          <h2 className="text-2xl font-bold text-white text-center">
-            Introducir número
-          </h2>
-
-          <div className="mt-6 space-y-4">
-            <input
-              value={numero}
-              onChange={(e) => setNumero(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && registrar()}
-              placeholder="0000"
-              className="h-28 w-full text-center text-5xl font-bold rounded-xl bg-black text-green-400 border border-green-500 shadow-lg tracking-widest outline-none"
-            />
-
-            <button
-              onClick={registrar}
-              className="h-20 w-full bg-green-500 text-black text-2xl rounded-xl font-bold shadow-lg hover:bg-green-400 transition"
-            >
-              REGISTRAR
-            </button>
+      <div className="mx-auto max-w-md">
+        <div className="rounded-[32px] border-8 border-white bg-cyan-700 p-4 shadow-2xl">
+          <div className="rounded-2xl bg-yellow-300 px-4 py-3 text-center shadow-inner">
+            <h1 className="text-5xl font-black tracking-widest text-red-600">
+              ARCADE
+            </h1>
           </div>
 
-          <div className="mt-5 flex justify-center">
-            <Badge tone={tipoMensaje}>
-              {mensaje || "Esperando número..."}
-            </Badge>
+          <div className="mt-4 rounded-[28px] border-8 border-slate-900 bg-slate-950 p-5 shadow-inner">
+            <div className="rounded-[24px] border-4 border-cyan-300 bg-gradient-to-b from-slate-900 via-blue-950 to-black p-5 text-center shadow-lg">
+              <div className="text-xs font-bold tracking-[0.3em] text-cyan-300">
+                PLAYER: {mesaActiva?.nombre || usuario}
+              </div>
+
+              <div className="mt-6 text-3xl font-black tracking-widest text-yellow-300">
+                INSERT CODE
+              </div>
+
+              <input
+                value={numero}
+                onChange={(e) => setNumero(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && registrar()}
+                placeholder="0000"
+                autoFocus
+                className="mt-6 h-28 w-full rounded-2xl border-4 border-green-400 bg-black text-center text-6xl font-black tracking-widest text-green-400 shadow-[0_0_25px_rgba(34,197,94,0.8)] outline-none"
+              />
+
+              <button
+                onClick={registrar}
+                className="mt-6 h-20 w-full rounded-full border-4 border-red-900 bg-red-600 text-3xl font-black tracking-widest text-yellow-200 shadow-[0_8px_0_#7f1d1d] active:translate-y-2 active:shadow-none"
+              >
+                FIRE
+              </button>
+
+              <div className="mt-6">
+                <Badge tone={tipoMensaje}>
+                  {mensaje || "READY PLAYER ONE"}
+                </Badge>
+              </div>
+            </div>
           </div>
-        </Card>
+
+          <div className="mt-5 grid grid-cols-5 gap-3">
+            <div className="h-8 rounded-full bg-yellow-400 shadow-md"></div>
+            <div className="h-8 rounded-full bg-red-500 shadow-md"></div>
+            <div className="h-12 rounded-full bg-slate-800 shadow-md"></div>
+            <div className="h-8 rounded-full bg-yellow-400 shadow-md"></div>
+            <div className="h-8 rounded-full bg-red-500 shadow-md"></div>
+          </div>
+
+          <div className="mt-6 rounded-xl bg-slate-900 p-4">
+            <div className="h-3 w-2/3 rounded bg-slate-700"></div>
+            <div className="mt-2 h-3 w-1/2 rounded bg-slate-700"></div>
+            <div className="mt-2 h-3 w-3/4 rounded bg-slate-700"></div>
+          </div>
+
+          <button
+            onClick={onLogout}
+            className="mt-4 w-full rounded-xl bg-slate-950 py-3 text-sm font-bold text-white"
+          >
+            EXIT GAME
+          </button>
+        </div>
       </div>
     </div>
   );
