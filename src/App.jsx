@@ -288,13 +288,7 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
           </div>
         </Card>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <StatCard title="Asignados" value={votsAsignados.length} />
-          <StatCard title="Pendientes" value={pendientes} />
-          <StatCard title="Registrados" value={registrados} />
-        </div>
-
-        <Card>
+          <Card>
           <h2 className="text-2xl font-bold text-slate-950">
             Registrar entrada
           </h2>
