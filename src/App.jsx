@@ -216,32 +216,97 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
   const [numero, setNumero] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
-  const [theme, setTheme] = useState(0);
+  const [juegoIndex, setJuegoIndex] = useState(0);
 
-  const fondos = [
-    "from-cyan-900 via-teal-700 to-blue-950",
-    "from-purple-950 via-fuchsia-800 to-slate-950",
-    "from-orange-900 via-red-700 to-yellow-600",
-    "from-emerald-950 via-green-700 to-cyan-900",
-    "from-indigo-950 via-blue-800 to-pink-700",
+  const juegos = [
+    {
+      titulo: "SPACE RUNNER",
+      subtitulo: "MISSION CODE",
+      fondo: "from-slate-950 via-blue-950 to-slate-900",
+      panel: "bg-slate-950 border-blue-700",
+      pantalla: "bg-slate-900 border-blue-500",
+      texto: "text-blue-200",
+      input: "bg-slate-950 text-blue-200 border-blue-500",
+      boton: "bg-blue-700 hover:bg-blue-600 text-white",
+      etiqueta: "READY",
+    },
+    {
+      titulo: "FOREST QUEST",
+      subtitulo: "ACCESS CODE",
+      fondo: "from-emerald-950 via-slate-900 to-stone-900",
+      panel: "bg-slate-950 border-emerald-700",
+      pantalla: "bg-stone-950 border-emerald-600",
+      texto: "text-emerald-200",
+      input: "bg-slate-950 text-emerald-200 border-emerald-600",
+      boton: "bg-emerald-700 hover:bg-emerald-600 text-white",
+      etiqueta: "START",
+    },
+    {
+      titulo: "DESERT RALLY",
+      subtitulo: "RACE NUMBER",
+      fondo: "from-stone-900 via-amber-950 to-slate-950",
+      panel: "bg-stone-950 border-amber-700",
+      pantalla: "bg-neutral-950 border-amber-600",
+      texto: "text-amber-200",
+      input: "bg-stone-950 text-amber-200 border-amber-600",
+      boton: "bg-amber-700 hover:bg-amber-600 text-white",
+      etiqueta: "GO",
+    },
+    {
+      titulo: "DEEP OCEAN",
+      subtitulo: "DIVE CODE",
+      fondo: "from-cyan-950 via-slate-900 to-blue-950",
+      panel: "bg-slate-950 border-cyan-700",
+      pantalla: "bg-slate-900 border-cyan-600",
+      texto: "text-cyan-200",
+      input: "bg-slate-950 text-cyan-200 border-cyan-600",
+      boton: "bg-cyan-800 hover:bg-cyan-700 text-white",
+      etiqueta: "LAUNCH",
+    },
+    {
+      titulo: "NIGHT CITY",
+      subtitulo: "ENTRY ID",
+      fondo: "from-slate-950 via-indigo-950 to-zinc-900",
+      panel: "bg-zinc-950 border-indigo-700",
+      pantalla: "bg-slate-950 border-indigo-500",
+      texto: "text-indigo-200",
+      input: "bg-zinc-950 text-indigo-200 border-indigo-500",
+      boton: "bg-indigo-700 hover:bg-indigo-600 text-white",
+      etiqueta: "ENTER",
+    },
+    {
+      titulo: "RETRO CUP",
+      subtitulo: "PLAYER CODE",
+      fondo: "from-neutral-900 via-stone-900 to-zinc-950",
+      panel: "bg-neutral-950 border-stone-600",
+      pantalla: "bg-black border-stone-500",
+      texto: "text-stone-200",
+      input: "bg-black text-stone-200 border-stone-500",
+      boton: "bg-stone-700 hover:bg-stone-600 text-white",
+      etiqueta: "PLAY",
+    },
   ];
+
+  const juego = juegos[juegoIndex];
 
   useEffect(() => {
     const intervalo = setInterval(() => {
-      setTheme((prev) => (prev + 1) % fondos.length);
-    }, 5000);
+      setJuegoIndex((prev) => (prev + 1) % juegos.length);
+    }, 300000); // 5 minutos
 
     return () => clearInterval(intervalo);
   }, []);
 
   const mesaActiva = mesas.find((m) => m.usuario === usuario);
   const votsAsignados = vots.filter((o) => o.mesaId === mesaActiva?.id);
+  const pendientes = votsAsignados.filter((o) => !o.registrada).length;
+  const registrados = votsAsignados.filter((o) => o.registrada).length;
 
   const registrar = async () => {
     const num = String(numero || "").trim();
 
     if (!num) {
-      setMensaje("INSERT NUMBER");
+      setMensaje("Introduce un número");
       setTipoMensaje("red");
       return;
     }
@@ -251,13 +316,13 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     if (!vot) {
-      setMensaje("GAME OVER · NOT FOUND");
+      setMensaje("Número no encontrado en esta mesa");
       setTipoMensaje("red");
       return;
     }
 
     if (vot.registrada) {
-      setMensaje("ALREADY PLAYED");
+      setMensaje("Ya estaba registrado");
       setTipoMensaje("amber");
       return;
     }
@@ -279,76 +344,71 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     setNumero("");
-    setMensaje("LEVEL COMPLETE");
+    setMensaje(`Registrado correctamente: ${vot.numero}`);
     setTipoMensaje("green");
   };
 
   return (
     <div
-      className={`min-h-screen bg-gradient-to-br ${fondos[theme]} px-4 py-6 transition-all duration-1000`}
+      className={`min-h-screen bg-gradient-to-br ${juego.fondo} px-5 py-6 transition-all duration-1000 md:px-8`}
     >
-      <div className="mx-auto max-w-md">
-        <div className="rounded-[32px] border-8 border-white bg-cyan-700 p-4 shadow-2xl">
-          <div className="rounded-2xl bg-yellow-300 px-4 py-3 text-center shadow-inner">
-            <h1 className="text-5xl font-black tracking-widest text-red-600">
-              ARCADE
-            </h1>
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div className={`rounded-[28px] border p-5 shadow-2xl ${juego.panel}`}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className={`text-xs font-bold tracking-[0.35em] ${juego.texto}`}>
+                {mesaActiva?.nombre || usuario}
+              </div>
+              <h1 className={`mt-2 text-3xl font-black tracking-widest ${juego.texto}`}>
+                {juego.titulo}
+              </h1>
+            </div>
+
+            <button
+              onClick={onLogout}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-xs font-bold text-white/80"
+            >
+              EXIT
+            </button>
           </div>
+        </div>
 
-          <div className="mt-4 rounded-[28px] border-8 border-slate-900 bg-slate-950 p-5 shadow-inner">
-            <div className="rounded-[24px] border-4 border-cyan-300 bg-gradient-to-b from-slate-900 via-blue-950 to-black p-5 text-center shadow-lg">
-              <div className="text-xs font-bold tracking-[0.3em] text-cyan-300">
-                PLAYER: {mesaActiva?.nombre || usuario}
-              </div>
+        <div className={`rounded-[32px] border p-6 shadow-2xl ${juego.panel}`}>
+          <div className={`rounded-[24px] border p-6 text-center shadow-inner ${juego.pantalla}`}>
+            <div className={`text-xl font-black tracking-[0.25em] ${juego.texto}`}>
+              {juego.subtitulo}
+            </div>
 
-              <div className="mt-6 text-3xl font-black tracking-widest text-yellow-300">
-                INSERT CODE
-              </div>
+            <input
+              value={numero}
+              onChange={(e) => setNumero(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && registrar()}
+              placeholder="0000"
+              autoFocus
+              className={`mt-6 h-28 w-full rounded-2xl border-2 px-6 text-center text-5xl font-black tracking-widest outline-none ${juego.input}`}
+            />
 
-              <input
-                value={numero}
-                onChange={(e) => setNumero(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && registrar()}
-                placeholder="0000"
-                autoFocus
-                className="mt-6 h-28 w-full rounded-2xl border-4 border-green-400 bg-black text-center text-6xl font-black tracking-widest text-green-400 shadow-[0_0_25px_rgba(34,197,94,0.8)] outline-none"
-              />
+            <button
+              onClick={registrar}
+              className={`mt-6 h-20 w-full rounded-2xl text-2xl font-black tracking-widest shadow-lg transition ${juego.boton}`}
+            >
+              {juego.etiqueta}
+            </button>
 
-              <button
-                onClick={registrar}
-                className="mt-6 h-20 w-full rounded-full border-4 border-red-900 bg-red-600 text-3xl font-black tracking-widest text-yellow-200 shadow-[0_8px_0_#7f1d1d] active:translate-y-2 active:shadow-none"
-              >
-                FIRE
-              </button>
-
-              <div className="mt-6">
-                <Badge tone={tipoMensaje}>
-                  {mensaje || "READY PLAYER ONE"}
-                </Badge>
-              </div>
+            <div className="mt-6">
+              <Badge tone={tipoMensaje}>
+                {mensaje || "Esperando número..."}
+              </Badge>
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-5 gap-3">
-            <div className="h-8 rounded-full bg-yellow-400 shadow-md"></div>
-            <div className="h-8 rounded-full bg-red-500 shadow-md"></div>
-            <div className="h-12 rounded-full bg-slate-800 shadow-md"></div>
-            <div className="h-8 rounded-full bg-yellow-400 shadow-md"></div>
-            <div className="h-8 rounded-full bg-red-500 shadow-md"></div>
+          <div className="mt-5 grid grid-cols-5 gap-3 opacity-60">
+            <div className="h-3 rounded-full bg-white/30"></div>
+            <div className="h-3 rounded-full bg-white/20"></div>
+            <div className="h-3 rounded-full bg-white/40"></div>
+            <div className="h-3 rounded-full bg-white/20"></div>
+            <div className="h-3 rounded-full bg-white/30"></div>
           </div>
-
-          <div className="mt-6 rounded-xl bg-slate-900 p-4">
-            <div className="h-3 w-2/3 rounded bg-slate-700"></div>
-            <div className="mt-2 h-3 w-1/2 rounded bg-slate-700"></div>
-            <div className="mt-2 h-3 w-3/4 rounded bg-slate-700"></div>
-          </div>
-
-          <button
-            onClick={onLogout}
-            className="mt-4 w-full rounded-xl bg-slate-950 py-3 text-sm font-bold text-white"
-          >
-            EXIT GAME
-          </button>
         </div>
       </div>
     </div>
