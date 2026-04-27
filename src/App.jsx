@@ -1,3 +1,65 @@
+import React, { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
+import { db } from "./firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+
+function Badge({ children, tone = "gray" }) {
+  const styles = {
+    gray: "bg-slate-100 text-slate-700",
+    green: "bg-emerald-100 text-emerald-700",
+    amber: "bg-amber-100 text-amber-700",
+    red: "bg-rose-100 text-rose-700",
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium ${styles[tone]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function Card({ children, className = "" }) {
+  return (
+    <div
+      className={`rounded-[22px] border border-slate-200 bg-white p-6 shadow-sm ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function StatCard({ title, value }) {
+  return (
+    <Card className="p-5">
+      <div className="text-sm text-slate-500">{title}</div>
+      <div className="mt-3 text-2xl font-bold text-slate-950">{value}</div>
+    </Card>
+  );
+}
+
+function LogoutButton({ onLogout }) {
+  return (
+    <button
+      onClick={onLogout}
+      className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium"
+    >
+      Salir
+    </button>
+  );
+}
+
+function ActionButton({ children, onClick, tone = "default" }) {
+  const classes = {
+    default: "border border-slate-200 text-slate-700",
     danger: "border border-rose-200 bg-rose-50 text-rose-700",
     dark: "bg-slate-950 text-white",
   };
@@ -151,7 +213,6 @@ function LoginScreen({ onLogin, responsables, mesas }) {
 }
 
 function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
-  const [busqueda, setBusqueda] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
 
@@ -160,39 +221,10 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
   const pendientes = votsAsignados.filter((o) => !o.registrada);
   const registrados = votsAsignados.filter((o) => o.registrada);
 
-  const normalizar = (texto) =>
-    String(texto || "")
-      .toLowerCase()
-      .replace(/\s+/g, "")
-      .trim();
-
-  const registrar = async () => {
-    const valor = normalizar(busqueda);
-
-    if (!valor) {
-      setMensaje("Introduce un nombre o teléfono");
-      setTipoMensaje("red");
-      return;
-    }
-
-    const vot = votsAsignados.find((o) => {
-      const nombre = normalizar(o.nombre);
-      const telefono = normalizar(o.telefono).replace(/\D/g, "");
-      const valorTelefono = valor.replace(/\D/g, "");
-
-      return nombre.includes(valor) || telefono.includes(valorTelefono);
-    });
-
-    if (!vot) {
-      setMensaje("VOT no encontrado en esta mesa");
-      setTipoMensaje("red");
-      return;
-    }
-
+  const registrarDirecto = async (vot) => {
     if (vot.registrada) {
       setMensaje("Este VOT ya estaba registrado");
       setTipoMensaje("amber");
-      setBusqueda("");
       return;
     }
 
@@ -209,12 +241,11 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
 
     setMensaje(`Registrado correctamente: ${vot.nombre}`);
     setTipoMensaje("green");
-    setBusqueda("");
   };
 
   return (
     <div className="min-h-screen bg-slate-100 px-5 py-6 md:px-8">
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -222,7 +253,7 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
                 Pantalla mesa
               </h1>
               <p className="mt-2 text-slate-600">
-                Registra un VOT introduciendo su nombre o teléfono.
+                VOTs asignados para control.
               </p>
               <p className="mt-1 text-sm text-slate-500">
                 Mesa activa: {mesaActiva?.nombre || usuario}
@@ -239,31 +270,57 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
         </div>
 
         <Card>
-          <h2 className="text-2xl font-bold text-slate-950">
-            Registrar VOT
-          </h2>
-
-          <div className="mt-6 space-y-4">
-            <input
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && registrar()}
-              placeholder="Nombre o teléfono"
-              className="h-24 w-full rounded-2xl border border-slate-200 px-6 text-center text-3xl font-bold outline-none"
-            />
-
-            <button
-              onClick={registrar}
-              className="h-20 w-full rounded-2xl bg-green-600 text-3xl font-bold text-white shadow-sm hover:bg-green-700"
-            >
-              REGISTRAR
-            </button>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-bold text-slate-950">
+              VOTs pendientes de registrar
+            </h2>
+            <Badge tone={tipoMensaje}>
+              {mensaje || "Pulsa registrar para completar la entrada"}
+            </Badge>
           </div>
 
-          <div className="mt-5 flex justify-center">
-            <Badge tone={tipoMensaje}>
-              {mensaje || "Esperando VOT"}
-            </Badge>
+          <div className="mt-5 overflow-auto rounded-xl border border-slate-200">
+            <table className="min-w-full text-sm">
+              <thead className="bg-slate-100 text-slate-800">
+                <tr>
+                  <th className="px-4 py-3 text-left">Nombre</th>
+                  <th className="px-4 py-3 text-left">Registrar</th>
+                  <th className="px-4 py-3 text-left">Teléfono</th>
+                  <th className="px-4 py-3 text-left">Calle</th>
+                  <th className="px-4 py-3 text-left">Hora</th>
+                  <th className="px-4 py-3 text-left">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendientes.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-4 py-6 text-center text-slate-500">
+                      No quedan VOTs pendientes para esta mesa.
+                    </td>
+                  </tr>
+                ) : (
+                  pendientes.map((o) => (
+                    <tr key={o.id} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold">{o.nombre}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => registrarDirecto(o)}
+                          className="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-green-700"
+                        >
+                          Registrar
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">{o.telefono || "-"}</td>
+                      <td className="px-4 py-3">{o.calle || "-"}</td>
+                      <td className="px-4 py-3">{o.hora || "-"}</td>
+                      <td className="px-4 py-3">
+                        <Badge tone="amber">Pendiente</Badge>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </Card>
       </div>
@@ -311,8 +368,7 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables, mesas }) {
           </div>
         </Card>
 
-        <div className="grid
- gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           <StatCard title="Responsable" value={responsable?.nombre || "-"} />
           <StatCard title="Llegadas" value={llegadas} />
           <StatCard title="Pendientes" value={pendientes} />
@@ -614,7 +670,6 @@ function CooperativaScreen({
       }
     };
 
-
     reader.readAsArrayBuffer(file);
     event.target.value = "";
   };
@@ -907,7 +962,6 @@ function CooperativaScreen({
                 value={nombreMesa}
                 onChange={(e) => setNombreMesa(e.target.value)}
                 placeholder="Nombre"
-
                 className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
               />
               <input
