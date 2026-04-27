@@ -219,28 +219,30 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
 
   const mesaActiva = mesas.find((m) => m.usuario === usuario);
   const votsAsignados = vots.filter((o) => o.mesaId === mesaActiva?.id);
+  const pendientes = votsAsignados.filter((o) => !o.registrada).length;
+  const registrados = votsAsignados.filter((o) => o.registrada).length;
 
   const registrar = async () => {
-    const num = numero.trim();
+    const num = String(numero || "").trim();
 
     if (!num) {
-      setMensaje("Introduce número");
+      setMensaje("Introduce un número");
       setTipoMensaje("red");
       return;
     }
 
     const vot = votsAsignados.find(
-      (o) => String(o.numero || "") === num
+      (o) => String(o.numero || "").trim() === num
     );
 
     if (!vot) {
-      setMensaje("Número no encontrado");
+      setMensaje("Número no encontrado en esta mesa");
       setTipoMensaje("red");
       return;
     }
 
     if (vot.registrada) {
-      setMensaje("Ya registrado");
+      setMensaje("Ya estaba registrado");
       setTipoMensaje("amber");
       return;
     }
@@ -262,7 +264,7 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     );
 
     setNumero("");
-    setMensaje("Registrado correctamente");
+    setMensaje(`Registrado correctamente: ${vot.numero}`);
     setTipoMensaje("green");
   };
 
@@ -270,39 +272,61 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
     <div className="min-h-screen bg-slate-100 px-5 py-6 md:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <Card>
-          <div className="flex justify-between">
-            <h1 className="text-3xl font-bold text-slate-950">Mesa</h1>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-950">
+                Pantalla mesa
+              </h1>
+              <p className="mt-2 text-slate-600">
+                Registro por número asignado.
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                Mesa activa: {mesaActiva?.nombre || usuario}
+              </p>
+            </div>
             <LogoutButton onLogout={onLogout} />
           </div>
-          <p className="mt-2 text-slate-600">
-            Mesa: {mesaActiva?.nombre || usuario}
-          </p>
         </Card>
 
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatCard title="Asignados" value={votsAsignados.length} />
+          <StatCard title="Pendientes" value={pendientes} />
+          <StatCard title="Registrados" value={registrados} />
+        </div>
+
         <Card>
-          <input
-            value={numero}
-            onChange={(e) => setNumero(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && registrar()}
-            placeholder="Número"
-            className="h-28 w-full text-center text-5xl font-bold border rounded-xl"
-          />
+          <h2 className="text-2xl font-bold text-slate-950">
+            Registrar entrada
+          </h2>
 
-          <button
-            onClick={registrar}
-            className="mt-4 h-20 w-full bg-green-600 text-white text-2xl rounded-xl"
-          >
-            Registrar
-          </button>
+          <div className="mt-6 space-y-4">
+            <input
+              value={numero}
+              onChange={(e) => setNumero(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && registrar()}
+              placeholder="Número"
+              className="h-28 w-full rounded-2xl border border-slate-200 px-6 text-center text-5xl font-bold outline-none"
+            />
 
-          <div className="mt-4 text-center">
-            <Badge tone={tipoMensaje}>{mensaje}</Badge>
+            <button
+              onClick={registrar}
+              className="h-20 w-full rounded-2xl bg-green-600 text-3xl font-bold text-white shadow-sm hover:bg-green-700"
+            >
+              Registrar
+            </button>
+          </div>
+
+          <div className="mt-5 flex justify-center">
+            <Badge tone={tipoMensaje}>
+              {mensaje || "Introduce el número del VOT"}
+            </Badge>
           </div>
         </Card>
       </div>
     </div>
   );
 }
+
 function ResponsableScreen({ onLogout, usuario, vots, responsables, mesas }) {
   const responsable = responsables.find((r) => r.usuario === usuario);
   const votsResp = vots.filter((o) => o.responsableId === responsable?.id);
@@ -355,6 +379,7 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables, mesas }) {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-100 text-slate-800">
                 <tr>
+                  <th className="px-4 py-3 text-left">Número</th>
                   <th className="px-4 py-3 text-left">Nombre</th>
                   <th className="px-4 py-3 text-left">Teléfono</th>
                   <th className="px-4 py-3 text-left">Calle</th>
@@ -370,7 +395,8 @@ function ResponsableScreen({ onLogout, usuario, vots, responsables, mesas }) {
 
                   return (
                     <tr key={o.id} className="border-t border-slate-200">
-                      <td className="px-4 py-3 font-semibold">{o.nombre}</td>
+                      <td className="px-4 py-3 font-semibold">{o.numero || "-"}</td>
+                      <td className="px-4 py-3">{o.nombre}</td>
                       <td className="px-4 py-3">{o.telefono || "-"}</td>
                       <td className="px-4 py-3">{o.calle || "-"}</td>
                       <td className="px-4 py-3">{mesa?.nombre || "-"}</td>
@@ -411,6 +437,7 @@ function CooperativaScreen({
   mesas,
   setMesas,
 }) {
+  const [nuevoNumero, setNuevoNumero] = useState("");
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [nuevoTelefono, setNuevoTelefono] = useState("");
   const [nuevaCalle, setNuevaCalle] = useState("");
@@ -457,6 +484,7 @@ function CooperativaScreen({
       const mesa = mesas.find((m) => m.id === v.mesaId);
 
       return {
+        numero: v.numero || "",
         nombre: v.nombre || "",
         telefono: v.telefono || "",
         calle: v.calle || "",
@@ -476,13 +504,14 @@ function CooperativaScreen({
   };
 
   const crearOActualizarVot = async () => {
-    if (!nuevoNombre || !nuevoResponsableId) return;
+    if (!nuevoNumero || !nuevoNombre || !nuevoResponsableId) return;
 
     if (votEditando) {
       const votActual = vots.find((v) => v.id === votEditando);
 
       if (votActual?.id) {
         await updateDoc(doc(db, "vots", votActual.id), {
+          numero: nuevoNumero,
           nombre: nuevoNombre,
           telefono: nuevoTelefono,
           calle: nuevaCalle,
@@ -496,6 +525,7 @@ function CooperativaScreen({
           v.id === votEditando
             ? {
                 ...v,
+                numero: nuevoNumero,
                 nombre: nuevoNombre,
                 telefono: nuevoTelefono,
                 calle: nuevaCalle,
@@ -509,6 +539,7 @@ function CooperativaScreen({
       setVotEditando(null);
     } else {
       const nuevoVot = {
+        numero: nuevoNumero,
         nombre: nuevoNombre,
         telefono: nuevoTelefono,
         calle: nuevaCalle,
@@ -522,6 +553,7 @@ function CooperativaScreen({
       setVots((prev) => [...prev, { id: docRef.id, ...nuevoVot }]);
     }
 
+    setNuevoNumero("");
     setNuevoNombre("");
     setNuevoTelefono("");
     setNuevaCalle("");
@@ -534,6 +566,7 @@ function CooperativaScreen({
 
   const editarVot = (v) => {
     setVotEditando(v.id);
+    setNuevoNumero(v.numero || "");
     setNuevoNombre(v.nombre || "");
     setNuevoTelefono(v.telefono || "");
     setNuevaCalle(v.calle || "");
@@ -568,6 +601,7 @@ function CooperativaScreen({
         const mesasActualizadas = [...mesas];
 
         for (const fila of filas) {
+          const numero = String(fila.numero || "").trim();
           const nombre = String(fila.nombre || "").trim();
           const telefono = String(fila.telefono || "").trim();
           const calle = String(fila.calle || "").trim();
@@ -608,12 +642,13 @@ function CooperativaScreen({
             mesasCreadas += 1;
           }
 
-          if (!nombre || !responsable) {
+          if (!numero || !nombre || !responsable) {
             errores += 1;
             continue;
           }
 
           const nuevo = {
+            numero,
             nombre,
             telefono,
             calle,
@@ -815,6 +850,12 @@ function CooperativaScreen({
             </h2>
             <div className="mt-4 space-y-3">
               <input
+                value={nuevoNumero}
+                onChange={(e) => setNuevoNumero(e.target.value)}
+                placeholder="Número"
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none"
+              />
+              <input
                 value={nuevoNombre}
                 onChange={(e) => setNuevoNombre(e.target.value)}
                 placeholder="Nombre"
@@ -872,7 +913,7 @@ function CooperativaScreen({
               Importar / Exportar VOTs
             </h2>
             <p className="mt-2 text-sm text-slate-500">
-              Columnas: nombre, telefono, calle, responsable, mesa
+              Columnas: numero, nombre, telefono, calle, responsable, mesa
             </p>
             <div className="mt-4 space-y-3">
               <input
@@ -965,8 +1006,9 @@ function CooperativaScreen({
             <h2 className="text-lg font-bold text-slate-950">Listado de VOTs</h2>
             <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-slate-800 sticky top-0">
+                <thead className="sticky top-0 bg-slate-100 text-slate-800">
                   <tr>
+                    <th className="px-4 py-3 text-left">Número</th>
                     <th className="px-4 py-3 text-left">Nombre</th>
                     <th className="px-4 py-3 text-left">Teléfono</th>
                     <th className="px-4 py-3 text-left">Calle</th>
@@ -984,7 +1026,8 @@ function CooperativaScreen({
 
                     return (
                       <tr key={o.id} className="border-t border-slate-200">
-                        <td className="px-4 py-3 font-semibold">{o.nombre}</td>
+                        <td className="px-4 py-3 font-semibold">{o.numero || "-"}</td>
+                        <td className="px-4 py-3">{o.nombre}</td>
                         <td className="px-4 py-3">{o.telefono || "-"}</td>
                         <td className="px-4 py-3">{o.calle || "-"}</td>
                         <td className="px-4 py-3">{responsable?.nombre || "-"}</td>
@@ -1018,7 +1061,7 @@ function CooperativaScreen({
             </h2>
             <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-slate-800 sticky top-0">
+                <thead className="sticky top-0 bg-slate-100 text-slate-800">
                   <tr>
                     <th className="px-4 py-3 text-left">Nombre</th>
                     <th className="px-4 py-3 text-left">Teléfono</th>
@@ -1056,7 +1099,7 @@ function CooperativaScreen({
             <h2 className="text-lg font-bold text-slate-950">Listado de mesas</h2>
             <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-100 text-slate-800 sticky top-0">
+                <thead className="sticky top-0 bg-slate-100 text-slate-800">
                   <tr>
                     <th className="px-4 py-3 text-left">Nombre</th>
                     <th className="px-4 py-3 text-left">Teléfono</th>
@@ -1116,6 +1159,7 @@ export default function App() {
         const datosVots = snapVots.docs.map((d) => ({
           id: d.id,
           ...d.data(),
+          numero: d.data().numero || "",
           nombre: d.data().nombre || "",
           telefono: d.data().telefono || "",
           calle: d.data().calle || "",
