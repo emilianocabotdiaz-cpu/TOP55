@@ -213,17 +213,34 @@ function LoginScreen({ onLogin, responsables, mesas }) {
 }
 
 function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
+  const [numero, setNumero] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("gray");
 
   const mesaActiva = mesas.find((m) => m.usuario === usuario);
   const votsAsignados = vots.filter((o) => o.mesaId === mesaActiva?.id);
-  const pendientes = votsAsignados.filter((o) => !o.registrada);
-  const registrados = votsAsignados.filter((o) => o.registrada);
 
-  const registrarDirecto = async (vot) => {
+  const registrar = async () => {
+    const num = numero.trim();
+
+    if (!num) {
+      setMensaje("Introduce número");
+      setTipoMensaje("red");
+      return;
+    }
+
+    const vot = votsAsignados.find(
+      (o) => String(o.numero || "") === num
+    );
+
+    if (!vot) {
+      setMensaje("Número no encontrado");
+      setTipoMensaje("red");
+      return;
+    }
+
     if (vot.registrada) {
-      setMensaje("Este VOT ya estaba registrado");
+      setMensaje("Ya registrado");
       setTipoMensaje("amber");
       return;
     }
@@ -233,101 +250,59 @@ function MesaScreen({ onLogout, vots, setVots, usuario, mesas }) {
       minute: "2-digit",
     });
 
-    await updateDoc(doc(db, "vots", vot.id), { registrada: true, hora });
+    await updateDoc(doc(db, "vots", vot.id), {
+      registrada: true,
+      hora,
+    });
 
     setVots((prev) =>
-      prev.map((o) => (o.id === vot.id ? { ...o, registrada: true, hora } : o))
+      prev.map((o) =>
+        o.id === vot.id ? { ...o, registrada: true, hora } : o
+      )
     );
 
-    setMensaje(`Registrado correctamente: ${vot.nombre}`);
+    setNumero("");
+    setMensaje("Registrado correctamente");
     setTipoMensaje("green");
   };
 
   return (
     <div className="min-h-screen bg-slate-100 px-5 py-6 md:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto max-w-3xl space-y-6">
         <Card>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-950">
-                Pantalla mesa
-              </h1>
-              <p className="mt-2 text-slate-600">
-                VOTs asignados para control.
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                Mesa activa: {mesaActiva?.nombre || usuario}
-              </p>
-            </div>
+          <div className="flex justify-between">
+            <h1 className="text-3xl font-bold text-slate-950">Mesa</h1>
             <LogoutButton onLogout={onLogout} />
           </div>
+          <p className="mt-2 text-slate-600">
+            Mesa: {mesaActiva?.nombre || usuario}
+          </p>
         </Card>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <StatCard title="Asignados" value={votsAsignados.length} />
-          <StatCard title="Pendientes" value={pendientes.length} />
-          <StatCard title="Registrados" value={registrados.length} />
-        </div>
-
         <Card>
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-bold text-slate-950">
-              VOTs pendientes de registrar
-            </h2>
-            <Badge tone={tipoMensaje}>
-              {mensaje || "Pulsa registrar para completar la entrada"}
-            </Badge>
-          </div>
+          <input
+            value={numero}
+            onChange={(e) => setNumero(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && registrar()}
+            placeholder="Número"
+            className="h-28 w-full text-center text-5xl font-bold border rounded-xl"
+          />
 
-          <div className="mt-5 overflow-auto rounded-xl border border-slate-200">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-100 text-slate-800">
-                <tr>
-                  <th className="px-4 py-3 text-left">Nombre</th>
-                  <th className="px-4 py-3 text-left">Registrar</th>
-                  <th className="px-4 py-3 text-left">Teléfono</th>
-                  <th className="px-4 py-3 text-left">Calle</th>
-                  <th className="px-4 py-3 text-left">Hora</th>
-                  <th className="px-4 py-3 text-left">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendientes.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="px-4 py-6 text-center text-slate-500">
-                      No quedan VOTs pendientes para esta mesa.
-                    </td>
-                  </tr>
-                ) : (
-                  pendientes.map((o) => (
-                    <tr key={o.id} className="border-t border-slate-200">
-                      <td className="px-4 py-3 font-semibold">{o.nombre}</td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => registrarDirecto(o)}
-                          className="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-green-700"
-                        >
-                          Registrar
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">{o.telefono || "-"}</td>
-                      <td className="px-4 py-3">{o.calle || "-"}</td>
-                      <td className="px-4 py-3">{o.hora || "-"}</td>
-                      <td className="px-4 py-3">
-                        <Badge tone="amber">Pendiente</Badge>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <button
+            onClick={registrar}
+            className="mt-4 h-20 w-full bg-green-600 text-white text-2xl rounded-xl"
+          >
+            Registrar
+          </button>
+
+          <div className="mt-4 text-center">
+            <Badge tone={tipoMensaje}>{mensaje}</Badge>
           </div>
         </Card>
       </div>
     </div>
   );
 }
-
 function ResponsableScreen({ onLogout, usuario, vots, responsables, mesas }) {
   const responsable = responsables.find((r) => r.usuario === usuario);
   const votsResp = vots.filter((o) => o.responsableId === responsable?.id);
