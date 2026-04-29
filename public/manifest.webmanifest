@@ -1,0 +1,42 @@
+{
+  "name": "OpoCompi",
+  "short_name": "OpoCompi",
+  "description": "Asistente IA, tests y acompanamiento para opositores a Policia Nacional.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b3b82",
+  "orientation": "portrait",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/brand/opocompi-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand/opocompi-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Abrir chat",
+      "short_name": "Chat",
+      "description": "Entrar al chat de acompanamiento",
+      "url": "/#asistente",
+      "icons": [{ "src": "/brand/opocompi-logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Practicar tests",
+      "short_name": "Tests",
+      "description": "Abrir la zona de tests",
+      "url": "/tests",
+      "icons": [{ "src": "/brand/opocompi-logo.png", "sizes": "192x192" }]
+    }
+  ]
+}
