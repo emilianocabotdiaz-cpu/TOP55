@@ -79,11 +79,11 @@ export default function TestsPage() {
         </header>
         <section className="tests-locked">
           <p className="eyebrow">Zona de miembros</p>
-          <h1>{checkingAccess ? "Comprobando acceso" : "Tests desbloqueados con la membresia"}</h1>
+          <h1>{checkingAccess ? "Comprobando acceso" : "Tests desbloqueados con la suscripción"}</h1>
           <p>
             {checkingAccess
-              ? "Estamos revisando tu sesion. Un segundo, compi."
-              : "Esta zona es para practicar como en examen: respondes primero y corriges despues. Entra o contrata la membresia para acceder."}
+              ? "Estamos revisando tu sesión. Un segundo, compi."
+              : "Esta zona es para practicar como en examen: respondes primero y corriges después. Entra o contrata la suscripción para acceder."}
           </p>
           {!checkingAccess ? <a className="btn btn-primary" href="/#login">Entrar o contratar</a> : null}
         </section>

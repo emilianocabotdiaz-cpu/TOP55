@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildOpoCompiInput, OPOCOMPI_SYSTEM_PROMPT } from "@/lib/opocompi-brain";
 
 const fallbackReply =
-  "Ahora mismo la IA real no esta configurada. Cuando anadas OPENAI_API_KEY en Vercel, OpoCompi respondera con su personalidad propia, generara tests y acompanara el estudio desde el servidor.";
+  "Ahora mismo la IA real no está configurada. Cuando añadas OPENAI_API_KEY en Vercel, OpoCompi responderá con su personalidad propia, generará tests y acompañará el estudio desde el servidor.";
 
 export async function POST(request: NextRequest) {
   const { message, mode } = (await request.json()) as { message?: string; mode?: string };

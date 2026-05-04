@@ -23,7 +23,7 @@ const checks: Check[] = [
   {
     label: "Stripe webhook",
     ok: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
-    help: "Necesario para activar o desactivar la membresia automaticamente.",
+    help: "Necesario para activar o desactivar la suscripción automáticamente.",
   },
 ];
 

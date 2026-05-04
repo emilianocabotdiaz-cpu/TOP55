@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!customerEmail) {
-    return NextResponse.json({ error: "Inicia sesion o introduce un email para contratar la membresia." }, { status: 400 });
+    return NextResponse.json({ error: "Inicia sesión o introduce un email para contratar la suscripción." }, { status: 400 });
   }
 
   const price =
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     mode: "subscription",
     customer_email: customerEmail,
     line_items: [{ price, quantity: 1 }],
-    success_url: `${siteUrl}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${siteUrl}/app?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl}/?checkout=cancelled`,
     metadata: {
       email: customerEmail,

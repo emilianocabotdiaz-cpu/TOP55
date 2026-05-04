@@ -1,5 +1,5 @@
-const CACHE_NAME = "opocompi-shell-v1";
-const APP_SHELL = ["/", "/tests", "/manifest.webmanifest", "/brand/opocompi-logo.png"];
+const CACHE_NAME = "opocompi-shell-v3";
+const APP_SHELL = ["/app", "/manifest.webmanifest", "/brand/opocompi-logo.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -30,6 +30,6 @@ self.addEventListener("fetch", (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/")))
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/app")))
   );
 });

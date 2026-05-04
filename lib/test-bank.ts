@@ -5,12 +5,12 @@ export type TestQuestion = {
   explanation: string;
 };
 
-export const topics = ["Constitucion Espanola", "Derecho Penal", "Extranjeria", "Ortografia", "Psicotecnicos"];
+export const topics = ["Constitución Española", "Derecho Penal", "Extranjería", "Ortografía", "Psicotécnicos"];
 
 export const sampleQuestions: Record<string, TestQuestion[]> = {
-  "Constitucion Espanola": [
+  "Constitución Española": [
     {
-      question: "Que valores superiores proclama el articulo 1.1 de la Constitucion Espanola?",
+      question: "¿Qué valores superiores proclama el artículo 1.1 de la Constitución Española?",
       options: [
         "Unidad, autonomia, solidaridad y justicia.",
         "Libertad, justicia, igualdad y pluralismo politico.",
@@ -21,14 +21,14 @@ export const sampleQuestions: Record<string, TestQuestion[]> = {
       explanation: "El articulo 1.1 recoge libertad, justicia, igualdad y pluralismo politico. La opcion C mezcla principios del articulo 9.3.",
     },
     {
-      question: "Donde reside la soberania nacional segun la Constitucion?",
+      question: "¿Dónde reside la soberanía nacional según la Constitución?",
       options: ["En las Cortes Generales.", "En el Rey.", "En el pueblo espanol.", "En el Gobierno."],
       correct: "C",
       explanation: "El articulo 1.2 establece que la soberania nacional reside en el pueblo espanol.",
     },
     {
       question: "Cual es la forma politica del Estado espanol?",
-      options: ["Republica parlamentaria.", "Monarquia constitucional federal.", "Monarquia parlamentaria.", "Estado autonomico presidencialista."],
+      options: ["República parlamentaria.", "Monarquía constitucional federal.", "Monarquía parlamentaria.", "Estado autonómico presidencialista."],
       correct: "C",
       explanation: "El articulo 1.3 establece que la forma politica del Estado espanol es la Monarquia parlamentaria.",
     },
@@ -74,7 +74,7 @@ export const sampleQuestions: Record<string, TestQuestion[]> = {
       options: [
         "La estancia es permanencia temporal; la residencia implica autorizacion para vivir en Espana durante un periodo mas estable.",
         "La residencia solo puede durar 24 horas.",
-        "La estancia equivale siempre a nacionalidad espanola.",
+        "La estancia equivale siempre a nacionalidad española.",
         "No existe diferencia entre ambas figuras.",
       ],
       correct: "A",
@@ -92,7 +92,7 @@ export const sampleQuestions: Record<string, TestQuestion[]> = {
       explanation: "Extranjeria cambia y exige prudencia: BOE y fuentes oficiales recientes tienen prioridad.",
     },
     {
-      question: "Que enfoque es mas seguro al estudiar extranjeria para oposicion?",
+      question: "¿Qué enfoque es más seguro al estudiar extranjería para oposición?",
       options: [
         "Memorizar esquemas antiguos sin comprobar fecha.",
         "Priorizar conceptos base y contrastar articulos o procedimientos con normativa vigente.",
